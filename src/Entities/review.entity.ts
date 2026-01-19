@@ -1,6 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Media, Product } from './product.entity';
-import { Length, Min } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString, Length, Min, MinLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 @Entity()
 export class ProductReview {
@@ -12,17 +13,21 @@ export class ProductReview {
   })
   product: Product;
 
-  @Column({
-    type: 'text',
-  })
+  @Column({ type: 'text' })
+  @IsString()
+  @MinLength(3)
   text: string;
 
-  @Column({
-    type: 'json',
-  })
+  @Column({type: 'json'})
+  @IsOptional()
+  @IsArray()
+  @Type(type => Media)
+  @ValidateNested({each: true})
   media: Media[];
 
   @Column()
   @Length(1, 5)
+  @Type(type => Number)
+  @IsNumber()
   stars: number;
 }

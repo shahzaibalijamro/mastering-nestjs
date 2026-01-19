@@ -8,14 +8,19 @@ import {
 } from 'typeorm';
 import { ProductReview } from './review.entity';
 import { Tag } from './tag.entity';
+import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUrl, MinLength, ValidateNested } from 'class-validator';
+import { Type } from 'class-transformer';
 
 enum MediaType {
   video = 'video',
   image = 'image',
 }
 
-export interface Media {
+export class Media {
+  @IsEnum(MediaType)
   type: MediaType;
+
+  @IsUrl()
   url: string;
 }
 
@@ -25,17 +30,27 @@ export class Product {
   id: string;
 
   @Column()
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(3)
   name: string;
 
-  @Column({
-    type: 'text',
-  })
+  @Column({ type: 'text' })
+  @IsNotEmpty()
+  @IsString()
+  @MinLength(10)
   description: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
+  @Type(type => Number)
+  @IsNumber()
+  @IsPositive()
   price: number;
 
   @Column('json')
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(type => Media)
   media: Media[];
 
   @OneToMany((type) => ProductReview, (review) => review.product, {

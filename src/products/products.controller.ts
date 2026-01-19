@@ -4,48 +4,42 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
-  Put,
-  UseGuards,
+  UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { CreateProductDTO, Product, UpdateProductDTO } from './products.model';
+import { Product } from '../Entities/product.entity';
+import { CreateProductDTO } from '../DTOs/product.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { uploadMediaToCloudinary } from '../Interceptors/upload-to-cloudinary.interceptor';
+import { multerConfig } from '../Configs/multer.config';
 
 @Controller('products')
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
   @Get()
-  getProducts(): Product[] {
+  getProducts(): Promise<Product[]> {
     return this.productsService.getProducts();
   }
 
   @Get(':id')
-  getProductById(@Param('id') id: string): Product {
+  getProductById(@Param('id') id: string): Promise<Product> {
     return this.productsService.getProductById(id);
   }
 
   @Post()
-  addProduct(@Body() body: CreateProductDTO): string {
-    return this.productsService.addProduct(body);
-  }
-
-  @Put(':id')
-  updateProductPut(
-    @Param('id') id: string,
+  @UseInterceptors(
+    FilesInterceptor('files', 10, multerConfig),
+    uploadMediaToCloudinary,
+  )
+  addProduct(
     @Body() body: CreateProductDTO,
-  ): Product {
-    return this.productsService.updateProductPut(id, body);
-  }
-
-  @Patch(':id')
-  updateProductPatch(
-    @Param('id') id: string,
-    @Body() body: UpdateProductDTO,
-  ): Product {
-    return this.productsService.updateProductPatch(id, body);
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ): string {
+    // console.log(files);
+    return 'abc';
   }
 
   @Delete(':id')
