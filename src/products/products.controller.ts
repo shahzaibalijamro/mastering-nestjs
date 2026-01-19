@@ -8,13 +8,12 @@ import {
   Post,
   Put,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDTO, Product, UpdateProductDTO } from './products.model';
-import { AuthGuard } from 'src/guards/auth.guards/auth.guards.guard';
 
 @Controller('products')
-@UseGuards(AuthGuard)
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
