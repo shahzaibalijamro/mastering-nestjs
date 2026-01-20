@@ -3,10 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from '../Entities/product.entity';
 import { CreateProductDTO } from '../DTOs/product.dto';
+import { ConfirmationMsg } from '../Interfaces/confirmation.interface';
 
 @Injectable()
 export class ProductsService {
-  private products: Product[] = [];
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
@@ -16,14 +16,18 @@ export class ProductsService {
     return await this.productRepository.find();
   }
 
-  async addProduct(body: CreateProductDTO): Promise<string> {
-    const { name, description ,price } = body;
+  async addProduct(body: CreateProductDTO): Promise<ConfirmationMsg> {
+    const { name, description, price, media } = body;
     const product = await this.productRepository.save({
       description,
       price,
       name,
+      media,
     });
-    return product.id;
+    return {
+      id: product.id,
+      message: 'Product added!'
+    };
   }
 
   async getProductById(id: string): Promise<Product> {

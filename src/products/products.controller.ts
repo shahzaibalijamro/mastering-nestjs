@@ -9,15 +9,20 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { Product } from '../Entities/product.entity';
-import { CreateProductDTO } from '../DTOs/product.dto';
+import { Media, Product } from '../Entities/product.entity';
+import { CreateProductDTORaw } from '../DTOs/product.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { uploadMediaToCloudinary } from '../Interceptors/upload-to-cloudinary.interceptor';
-import { multerConfig } from '../Configs/multer.config';
+import { FileValidationInterceptor } from '../Interceptors/file-validation.interceptor';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { formatCloudinaryMediaFiles } from '../Utils/utils';
+import { UploadApiResponse } from 'cloudinary';
 
 @Controller('products')
 export class ProductsController {
-  constructor(private productsService: ProductsService) {}
+  constructor(
+    private productsService: ProductsService,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
   @Get()
   getProducts(): Promise<Product[]> {
@@ -31,15 +36,21 @@ export class ProductsController {
 
   @Post()
   @UseInterceptors(
-    FilesInterceptor('files', 10, multerConfig),
-    uploadMediaToCloudinary,
+    FilesInterceptor('files', 10, {
+      limits: {
+        fileSize: 50 * 1024 * 1024,
+      },
+    }),
+    FileValidationInterceptor,
   )
-  addProduct(
-    @Body() body: CreateProductDTO,
+  async addProduct(
+    @Body() body: CreateProductDTORaw,
     @UploadedFiles() files: Array<Express.Multer.File>,
-  ): string {
-    // console.log(files);
-    return 'abc';
+  ) {
+    const {name, description, price} = body;
+    const UploadedFiles: UploadApiResponse[] = await this.cloudinaryService.uploadFiles(files);
+    const media: Media[] = formatCloudinaryMediaFiles(UploadedFiles)
+    return await this.productsService.addProduct({name, description, price, media})
   }
 
   @Delete(':id')

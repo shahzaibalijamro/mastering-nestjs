@@ -11,7 +11,7 @@ import { Tag } from './tag.entity';
 import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUrl, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
-enum MediaType {
+export enum MediaType {
   video = 'video',
   image = 'image',
 }
@@ -22,6 +22,9 @@ export class Media {
 
   @IsUrl()
   url: string;
+
+  @IsString()
+  cloudinaryPublicId: string;
 }
 
 @Entity()

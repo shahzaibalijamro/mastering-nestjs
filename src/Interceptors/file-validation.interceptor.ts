@@ -29,7 +29,7 @@ const VIDEO_MIME_TYPES = new Set([
 ]);
 
 @Injectable()
-export class uploadMediaToCloudinary implements NestInterceptor {
+export class FileValidationInterceptor implements NestInterceptor {
   intercept(
     context: ExecutionContext,
     next: CallHandler<any>,

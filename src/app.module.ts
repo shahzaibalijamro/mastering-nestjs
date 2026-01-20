@@ -4,7 +4,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseTransformInterceptor } from './Interceptors/response-transform.interceptor';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MulterModule } from '@nestjs/platform-express';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 
 @Module({
   imports: [
@@ -24,7 +24,8 @@ import { MulterModule } from '@nestjs/platform-express';
           autoLoadEntities: true,
         };
       },
-    })
+    }),
+    CloudinaryModule,
   ],
   controllers: [],
   exports: [],
