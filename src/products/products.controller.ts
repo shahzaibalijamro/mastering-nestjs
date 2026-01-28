@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  Patch,
   Post,
   UploadedFiles,
   UseInterceptors,
@@ -53,6 +54,7 @@ export class ProductsController {
     return await this.productsService.addProduct({name, description, price, media})
   }
 
+  @Patch(':id')
   async updateProduct(
     @Body() body: UpdateProductDTORaw,
     @Param('id') id: string
