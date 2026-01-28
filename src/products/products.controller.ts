@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { Media, Product } from '../Entities/product.entity';
-import { CreateProductDTORaw } from '../DTOs/product.dto';
+import { CreateProductDTORaw, UpdateProductDTORaw } from '../DTOs/product.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileValidationInterceptor } from '../Interceptors/file-validation.interceptor';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -51,6 +51,13 @@ export class ProductsController {
     const UploadedFiles: UploadApiResponse[] = await this.cloudinaryService.uploadFiles(files);
     const media: Media[] = formatCloudinaryMediaFiles(UploadedFiles)
     return await this.productsService.addProduct({name, description, price, media})
+  }
+
+  async updateProduct(
+    @Body() body: UpdateProductDTORaw,
+    @Param('id') id: string
+  ) {
+    return await this.productsService.updateProduct(id, body);
   }
 
   @Delete(':id')

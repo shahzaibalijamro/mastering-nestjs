@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Product } from '../Entities/product.entity';
-import { CreateProductDTO } from '../DTOs/product.dto';
+import { CreateProductDTO, UpdateProductDTO } from '../DTOs/product.dto';
 import { ConfirmationMsg } from '../Interfaces/confirmation.interface';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class ProductsService {
     });
     return {
       id: product.id,
-      message: 'Product added!'
+      message: 'Product added!',
     };
   }
 
@@ -42,25 +42,21 @@ export class ProductsService {
     return product;
   }
 
-  // updateProductPut(id: string, body: CreateProductDTO): Product {
-  //   const product = this.getProductById(id);
-
-  //   product.title = body.title;
-  //   product.description = body.description;
-  //   product.price = body.price;
-
-  //   return product;
-  // }
-
-  // updateProductPatch(id: string, body: UpdateProductDTO): Product {
-  //   const product = this.getProductById(id);
-
-  //   if (body.title !== undefined) product.title = body.title;
-  //   if (body.description !== undefined) product.description = body.description;
-  //   if (body.price !== undefined) product.price = body.price;
-
-  //   return product;
-  // }
+  async updateProduct(
+    id: string,
+    body: UpdateProductDTO,
+  ): Promise<ConfirmationMsg> {
+    const { name, description, price, media } = body;
+    const product = await this.getProductById(id);
+    product.name = name || product.name;
+    product.description = description || product.description;
+    product.price = price || product.price;
+    await this.productRepository.save(product);
+    return {
+      id: product.id,
+      message: 'Product updated!',
+    };
+  }
 
   async deleteProduct(id: string): Promise<void> {
     const product = await this.getProductById(id);
