@@ -1,15 +1,27 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Product } from '../Entities/product.entity';
-import { CreateProductDTO, UpdateProductDTO } from '../DTOs/product.dto';
+import { Media, MediaType, Product } from '../Entities/product.entity';
+import {
+  CreateProductDTO,
+  UpdateProductDTO,
+  UpdateProductMediaDTO,
+} from '../DTOs/product.dto';
 import { ConfirmationMsg } from '../Interfaces/confirmation.interface';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { UploadApiResponse } from 'cloudinary';
+import { formatCloudinaryMediaFiles } from 'src/Utils/utils';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   async getProducts(): Promise<Product[]> {
@@ -58,8 +70,96 @@ export class ProductsService {
     };
   }
 
-  async deleteProduct(id: string): Promise<void> {
+  async deleteProduct(id: string): Promise<ConfirmationMsg> {
     const product = await this.getProductById(id);
+    const productId = product.id;
+    await Promise.all(
+      product.media.map((item) =>
+        this.cloudinaryService.deleteFile(item.cloudinaryPublicId),
+      ),
+    );
     await this.productRepository.remove(product);
+    return {
+      id: productId,
+      message: 'Product deleted!',
+    };
+  }
+
+  async updateProductMedia(
+    id: string,
+    body: UpdateProductMediaDTO,
+    file?: Express.Multer.File | undefined,
+  ): Promise<ConfirmationMsg> {
+    const { cloudinaryPublicId } = body;
+    const product = await this.getProductById(id);
+    if (!cloudinaryPublicId) {
+      throw new BadRequestException(
+        'cloudinaryPublicId is required for media updation!',
+      );
+    }
+    const index = product.media.findIndex(
+      (media) => media.cloudinaryPublicId === cloudinaryPublicId,
+    );
+    if (index === -1) {
+      throw new NotFoundException('Media not found!');
+    }
+    if (!file) {
+      throw new BadRequestException('No substitute file recieved!');
+    }
+    const [_, uploadedFile] = await Promise.all([
+      this.cloudinaryService.deleteFile(cloudinaryPublicId),
+      this.cloudinaryService.uploadFile(file),
+    ]);
+    product.media[index].cloudinaryPublicId = uploadedFile.public_id;
+    product.media[index].url = uploadedFile.url;
+    product.media[index].type = uploadedFile.resource_type as MediaType;
+    await this.productRepository.save(product);
+    return {
+      id: product.id,
+      message: 'Media updated!',
+    };
+  }
+
+  async addProductMedia(
+    id: string,
+    files: Array<Express.Multer.File>,
+  ): Promise<ConfirmationMsg> {
+    const product = await this.getProductById(id);
+    if (files.length > 10 - product.media.length) {
+      throw new BadRequestException(
+        `Products cannot have more than 10 media files!`,
+      );
+    }
+    const UploadedFiles: UploadApiResponse[] =
+      await this.cloudinaryService.uploadFiles(files);
+    const media: Media[] = formatCloudinaryMediaFiles(UploadedFiles);
+    product.media = [...product.media, ...media];
+    await this.productRepository.save(product);
+    return {
+      id: product.id,
+      message: 'New product media added!',
+    };
+  }
+
+  async deleteProductMedia(
+    id: string,
+    cloudinaryPublicIds: Array<string>,
+  ): Promise<ConfirmationMsg> {
+    const product = await this.getProductById(id);
+    if (product.media.length < 2) {
+      throw new BadRequestException('Product must at least have one media!');
+    }
+    await Promise.all(
+      cloudinaryPublicIds.map((id) => this.cloudinaryService.deleteFile(id)),
+    );
+    const filteredMedia = product.media.filter(
+      (item) => !cloudinaryPublicIds.includes(item.cloudinaryPublicId),
+    );
+    product.media = filteredMedia;
+    await this.productRepository.save(product);
+    return {
+      id: product.id,
+      message: 'Product media deleted!',
+    };
   }
 }

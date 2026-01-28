@@ -41,7 +41,6 @@ export class FileValidationInterceptor implements NestInterceptor {
         `Products cannot have more than ${MAX_MEDIA_FILES} media files!`,
       );
     }
-    console.log(files);
     for (const file of files) {
       const { mimetype, size } = file;
       if (VIDEO_MIME_TYPES.has(mimetype)) {
@@ -56,8 +55,6 @@ export class FileValidationInterceptor implements NestInterceptor {
         }
         continue;
       }
-
-      // EVERYTHING ELSE = REJECT
       throw new UnsupportedMediaTypeException(
         `Unsupported file type: ${mimetype}`,
       );

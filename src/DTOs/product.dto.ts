@@ -1,6 +1,6 @@
 import { Type } from 'class-transformer';
 import {
-    IsArray,
+  IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -74,7 +74,6 @@ export class UpdateProductDTO {
   media?: Media[];
 }
 
-
 export class UpdateProductDTORaw {
   @IsOptional()
   @IsString()
@@ -91,4 +90,20 @@ export class UpdateProductDTORaw {
   @IsNumber()
   @IsPositive()
   price?: number;
+}
+
+export class UpdateProductMediaDTO {
+  @IsOptional()
+  @IsString()
+  cloudinaryPublicId?: string;
+
+  @IsOptional()
+  @Type((type) => Media)
+  media?: Media;
+}
+
+export class DeleteProductMediaDTO {
+  @IsNotEmpty()
+  @IsString()
+  cloudinaryPublicId?: string;
 }
