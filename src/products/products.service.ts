@@ -10,7 +10,7 @@ import {
   CreateProductDTO,
   UpdateProductDTO,
   UpdateProductMediaDTO,
-} from './dto/products.dtos';
+} from './dto/products.dto';
 import { ConfirmationMsg } from '../utils/confirmation.interface';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';

@@ -17,7 +17,7 @@ import {
   CreateProductDTO,
   UpdateProductDTORaw,
   UpdateProductMediaDTO,
-} from './dto/products.dtos';
+} from './dto/products.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileValidationInterceptor } from '../interceptors/file-validation.interceptor';
 

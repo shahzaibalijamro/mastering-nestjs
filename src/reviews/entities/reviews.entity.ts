@@ -20,17 +20,16 @@ export class ProductReview {
   text?: string;
 
   @IsOptional()
-  @Column({type: 'json'})
+  @Column({type: 'json', nullable: true})
   @IsArray()
   @Type(type => Media)
   @ValidateNested({each: true})
-  @ArrayMinSize(1)
-  @ArrayMaxSize(10)
+  @ArrayMaxSize(5)
   media?: Media[];
 
-  @Column()
-  @Length(1, 5)
+  @Column('decimal', { precision: 2, scale: 1 })
   @Type(type => Number)
+  @Length(1, 5)
   @IsNumber()
   stars: number;
 }

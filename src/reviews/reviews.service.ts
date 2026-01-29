@@ -6,7 +6,7 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { AddReviewDTO } from './dto/reviews.dto';
 import { UploadApiResponse } from 'cloudinary';
 import { formatCloudinaryMediaFiles } from 'src/utils/utils';
-import { Media, Product } from 'src/products/entities/product.entity';
+import { Product } from 'src/products/entities/product.entity';
 import { ProductsService } from 'src/products/products.service';
 import { ConfirmationMsg } from 'src/utils/confirmation.interface';
 
