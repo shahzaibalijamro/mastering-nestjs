@@ -1,11 +1,13 @@
 import { Type } from 'class-transformer';
 import {
+  ArrayMinSize,
   IsArray,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsPositive,
   IsString,
+  IsUUID,
   MinLength,
   ValidateNested,
 } from 'class-validator';
@@ -84,4 +86,13 @@ export class DeleteProductMediaDTO {
   @IsNotEmpty()
   @IsString()
   cloudinaryPublicId?: string;
+}
+
+export class deleteMultipleProductsDTO {
+  @IsArray()
+  @ArrayMinSize(1)
+  @IsUUID(4, {
+    each: true
+  })
+  ids: Array<string>
 }

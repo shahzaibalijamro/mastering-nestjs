@@ -8,6 +8,7 @@ import { Repository } from 'typeorm';
 import { Media, MediaType, Product } from './entities/product.entity';
 import {
   CreateProductDTO,
+  deleteMultipleProductsDTO,
   UpdateProductDTO,
   UpdateProductMediaDTO,
 } from './dto/products.dto';
@@ -89,6 +90,14 @@ export class ProductsService {
       id: productId,
       message: 'Product deleted!',
     };
+  }
+
+  async deleteMultipleProducts(body: deleteMultipleProductsDTO) {
+    const {ids} = body;
+    await Promise.all(ids.map(id => this.deleteProduct(id)))
+    return {
+      message: `Product${ids.length === 1 ? '' : 's'} deleted!`
+    }
   }
 
   async updateProductMedia(

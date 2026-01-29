@@ -15,6 +15,7 @@ import { ProductsService } from './products.service';
 import { Product } from './entities/product.entity';
 import {
   CreateProductDTO,
+  deleteMultipleProductsDTO,
   UpdateProductDTORaw,
   UpdateProductMediaDTO,
 } from './dto/products.dto';
@@ -64,6 +65,13 @@ export class ProductsController {
   @Delete(':id')
   deleteProduct(@Param('id', ParseUUIDPipe) id: string) {
     return this.productsService.deleteProduct(id);
+  }
+
+  @Delete()
+  deleteMultipleProducts(
+    @Body() body: deleteMultipleProductsDTO
+  ) {
+    return this.productsService.deleteMultipleProducts(body);
   }
 
   @Patch(':id/media')
