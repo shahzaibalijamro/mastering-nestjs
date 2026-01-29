@@ -1,6 +1,6 @@
 import { UnsupportedMediaTypeException } from '@nestjs/common';
 import { UploadApiResponse } from 'cloudinary';
-import { Media, MediaType } from '../Entities/product.entity';
+import { Media, MediaType } from '../products/entities/product.entity';
 
 export const formatCloudinaryMediaFiles = (
   UploadedFiles: UploadApiResponse[],

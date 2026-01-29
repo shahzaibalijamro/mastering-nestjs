@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ProductsModule } from './products/products.module';
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { ResponseTransformInterceptor } from './Interceptors/response-transform.interceptor';
+import { ResponseTransformInterceptor } from './interceptors/response-transform.interceptor';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { TagsModule } from './tags/tags.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { CloudinaryModule } from './cloudinary/cloudinary.module';
       },
     }),
     CloudinaryModule,
+    ReviewsModule,
+    TagsModule,
   ],
   controllers: [],
   exports: [],

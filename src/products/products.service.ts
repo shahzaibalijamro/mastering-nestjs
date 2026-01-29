@@ -5,16 +5,16 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Media, MediaType, Product } from '../Entities/product.entity';
+import { Media, MediaType, Product } from './entities/product.entity';
 import {
   CreateProductDTO,
   UpdateProductDTO,
   UpdateProductMediaDTO,
-} from '../DTOs/product.dto';
-import { ConfirmationMsg } from '../Interfaces/confirmation.interface';
+} from './dto/products.dtos';
+import { ConfirmationMsg } from '../utils/confirmation.interface';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';
-import { formatCloudinaryMediaFiles } from 'src/Utils/utils';
+import { formatCloudinaryMediaFiles } from 'src/utils/utils';
 
 @Injectable()
 export class ProductsService {
@@ -28,8 +28,14 @@ export class ProductsService {
     return await this.productRepository.find();
   }
 
-  async addProduct(body: CreateProductDTO): Promise<ConfirmationMsg> {
-    const { name, description, price, media } = body;
+  async addProduct(
+    body: CreateProductDTO,
+    files: Array<Express.Multer.File>,
+  ): Promise<ConfirmationMsg> {
+    const { name, description, price } = body;
+    const UploadedFiles: UploadApiResponse[] =
+      await this.cloudinaryService.uploadFiles(files);
+    const media: Media[] = formatCloudinaryMediaFiles(UploadedFiles);
     const product = await this.productRepository.save({
       description,
       price,
@@ -88,7 +94,7 @@ export class ProductsService {
   async updateProductMedia(
     id: string,
     body: UpdateProductMediaDTO,
-    file?: Express.Multer.File | undefined,
+    file: Express.Multer.File,
   ): Promise<ConfirmationMsg> {
     const { cloudinaryPublicId } = body;
     const product = await this.getProductById(id);
@@ -102,9 +108,6 @@ export class ProductsService {
     );
     if (index === -1) {
       throw new NotFoundException('Media not found!');
-    }
-    if (!file) {
-      throw new BadRequestException('No substitute file recieved!');
     }
     const [_, uploadedFile] = await Promise.all([
       this.cloudinaryService.deleteFile(cloudinaryPublicId),

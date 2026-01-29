@@ -3,36 +3,28 @@ import {
   Body,
   Controller,
   Delete,
-  FileTypeValidator,
   Get,
-  MaxFileSizeValidator,
   Param,
-  ParseFilePipe,
   ParseUUIDPipe,
   Patch,
   Post,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
-import { Media, Product } from '../Entities/product.entity';
+import { Product } from './entities/product.entity';
 import {
-  CreateProductDTORaw,
+  CreateProductDTO,
   UpdateProductDTORaw,
   UpdateProductMediaDTO,
-} from '../DTOs/product.dto';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
-import { FileValidationInterceptor } from '../Interceptors/file-validation.interceptor';
-import { CloudinaryService } from '../cloudinary/cloudinary.service';
-import { formatCloudinaryMediaFiles } from '../Utils/utils';
-import { UploadApiResponse } from 'cloudinary';
+} from './dto/products.dtos';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileValidationInterceptor } from '../interceptors/file-validation.interceptor';
 
 @Controller('products')
 export class ProductsController {
   constructor(
-    private productsService: ProductsService,
-    private cloudinaryService: CloudinaryService,
+    private productsService: ProductsService
   ) {}
 
   @Get()
@@ -55,25 +47,16 @@ export class ProductsController {
     FileValidationInterceptor,
   )
   async addProduct(
-    @Body() body: CreateProductDTORaw,
+    @Body() body: CreateProductDTO,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    const { name, description, price } = body;
-    const UploadedFiles: UploadApiResponse[] =
-      await this.cloudinaryService.uploadFiles(files);
-    const media: Media[] = formatCloudinaryMediaFiles(UploadedFiles);
-    return this.productsService.addProduct({
-      name,
-      description,
-      price,
-      media,
-    });
+    return this.productsService.addProduct(body, files);
   }
 
   @Patch(':id')
   updateProduct(
     @Body() body: UpdateProductDTORaw,
-    @Param('id', ParseUUIDPipe) id: string
+    @Param('id', ParseUUIDPipe) id: string,
   ) {
     return this.productsService.updateProduct(id, body);
   }
@@ -95,10 +78,10 @@ export class ProductsController {
   updateProductMedia(
     @Body() body: UpdateProductMediaDTO,
     @Param('id', ParseUUIDPipe) id: string,
-    @UploadedFiles() files: Array<Express.Multer.File>
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    const file = files?.length > 0 ? files[0] : undefined;
-    return this.productsService.updateProductMedia(id, body, file);
+    if (files?.length === 0) throw new BadRequestException('No file recieved!');
+    return this.productsService.updateProductMedia(id, body, files[0]);
   }
 
   @Post(':id/media')
@@ -112,18 +95,20 @@ export class ProductsController {
   )
   addProductMedia(
     @Param('id', ParseUUIDPipe) id: string,
-    @UploadedFiles() files: Array<Express.Multer.File>
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ) {
-    if (files?.length === 0) throw new BadRequestException('No new files recieved!');
+    if (files?.length === 0)
+      throw new BadRequestException('No new files recieved!');
     return this.productsService.addProductMedia(id, files);
   }
 
   @Delete(':id/media')
   deleteProductMedia(
     @Param('id', ParseUUIDPipe) id: string,
-    @Body('ids') cloudinaryPublicIds: Array<string>
+    @Body('ids') cloudinaryPublicIds: Array<string>,
   ) {
-    if (cloudinaryPublicIds?.length === 0) throw new BadRequestException('No cloudinaryPublicIds recieved!')
+    if (cloudinaryPublicIds?.length === 0)
+      throw new BadRequestException('No cloudinaryPublicIds recieved!');
     return this.productsService.deleteProductMedia(id, cloudinaryPublicIds);
   }
 }

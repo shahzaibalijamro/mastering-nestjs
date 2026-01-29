@@ -6,9 +6,9 @@ import {
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { ProductReview } from './review.entity';
-import { Tag } from './tag.entity';
-import { IsArray, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUrl, MinLength, ValidateNested } from 'class-validator';
+import { ProductReview } from '../../reviews/entities/reviews.entity';
+import { Tag } from '../../tags/entities/tags.entity';
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUrl, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export enum MediaType {
@@ -54,6 +54,8 @@ export class Product {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(type => Media)
+  @ArrayMinSize(1)
+  @ArrayMaxSize(10)
   media: Media[];
 
   @OneToMany((type) => ProductReview, (review) => review.product, {
@@ -64,13 +66,13 @@ export class Product {
 
   @ManyToMany((type) => Tag, (tag) => tag.products)
   @JoinTable({
-    name: 'product_tags', // Custom table name
+    name: 'product_tags',
     joinColumn: {
-      name: 'productId', // Foreign key to Product
+      name: 'productId',
       referencedColumnName: 'id',
     },
     inverseJoinColumn: {
-      name: 'tagId', // Foreign key to Tag
+      name: 'tagId',
       referencedColumnName: 'id',
     },
   })

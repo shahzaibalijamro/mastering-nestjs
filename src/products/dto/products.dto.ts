@@ -9,31 +9,9 @@ import {
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { Media } from '../Entities/product.entity';
+import { Media } from '../entities/product.entity';
 
 export class CreateProductDTO {
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
-  name: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(3)
-  description: string;
-
-  @Type((type) => Number)
-  @IsNumber()
-  @IsPositive()
-  price: number;
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type((type) => Media)
-  media: Media[];
-}
-
-export class CreateProductDTORaw {
   @IsString()
   @IsNotEmpty()
   @MinLength(3)
