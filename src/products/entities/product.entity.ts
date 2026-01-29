@@ -64,7 +64,9 @@ export class Product {
   })
   reviews: ProductReview[];
 
-  @ManyToMany((type) => Tag, (tag) => tag.products)
+  @ManyToMany((type) => Tag, (tag) => tag.products, {
+    eager: true
+  })
   @JoinTable({
     name: 'product_tags',
     joinColumn: {

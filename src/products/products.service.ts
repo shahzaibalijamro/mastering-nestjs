@@ -16,6 +16,7 @@ import { ConfirmationMsg } from '../utils/confirmation.interface';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';
 import { formatCloudinaryMediaFiles } from 'src/utils/utils';
+import { TagsService } from 'src/tags/tags.service';
 
 @Injectable()
 export class ProductsService {
@@ -23,6 +24,7 @@ export class ProductsService {
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
     private cloudinaryService: CloudinaryService,
+    private readonly tagsService: TagsService,
   ) {}
 
   async getProducts(): Promise<Product[]> {
@@ -33,16 +35,24 @@ export class ProductsService {
     body: CreateProductDTO,
     files: Array<Express.Multer.File>,
   ): Promise<ConfirmationMsg> {
-    const { name, description, price } = body;
+    const { name, description, price, tagIds } = body;
     const UploadedFiles: UploadApiResponse[] =
       await this.cloudinaryService.uploadFiles(files);
+      console.log(UploadedFiles);
+      
     const media: Media[] = formatCloudinaryMediaFiles(UploadedFiles);
-    const product = await this.productRepository.save({
+    const product = this.productRepository.create({
       description,
       price,
       name,
       media,
     });
+    if (tagIds?.length > 0) {
+      product.tags = await Promise.all(
+        tagIds.map((id) => this.tagsService.findTagById(id)),
+      );
+    }
+    await this.productRepository.save(product);
     return {
       id: product.id,
       message: 'Product added!',
@@ -93,11 +103,11 @@ export class ProductsService {
   }
 
   async deleteMultipleProducts(body: deleteMultipleProductsDTO) {
-    const {ids} = body;
-    await Promise.all(ids.map(id => this.deleteProduct(id)))
+    const { ids } = body;
+    await Promise.all(ids.map((id) => this.deleteProduct(id)));
     return {
-      message: `Product${ids.length === 1 ? '' : 's'} deleted!`
-    }
+      message: `Product${ids.length === 1 ? '' : 's'} deleted!`,
+    };
   }
 
   async updateProductMedia(

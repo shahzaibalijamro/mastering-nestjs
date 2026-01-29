@@ -28,6 +28,11 @@ export class CreateProductDTO {
   @IsNumber()
   @IsPositive()
   price: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(4, {each: true})
+  tagIds: Array<string>
 }
 
 export class UpdateProductDTO {
@@ -52,6 +57,11 @@ export class UpdateProductDTO {
   @ValidateNested({ each: true })
   @Type((type) => Media)
   media?: Media[];
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(4, {each: true})
+  tagIds: Array<string>
 }
 
 export class UpdateProductDTORaw {
@@ -70,6 +80,11 @@ export class UpdateProductDTORaw {
   @IsNumber()
   @IsPositive()
   price?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsUUID(4, {each: true})
+  tagIds: Array<string>
 }
 
 export class UpdateProductMediaDTO {

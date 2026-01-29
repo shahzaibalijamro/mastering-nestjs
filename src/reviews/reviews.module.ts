@@ -3,15 +3,18 @@ import { ReviewsController } from './reviews.controller';
 import { ReviewsService } from './reviews.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductReview } from './entities/reviews.entity';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { ProductsService } from 'src/products/products.service';
-import { Product } from 'src/products/entities/product.entity';
+import { ProductsModule } from 'src/products/products.module';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { TagsModule } from 'src/tags/tags.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([ProductReview, Product])
+    TypeOrmModule.forFeature([ProductReview]),
+    ProductsModule,
+    CloudinaryModule,
+    TagsModule
   ],
   controllers: [ReviewsController],
-  providers: [ReviewsService, CloudinaryService, ProductsService]
+  providers: [ReviewsService]
 })
 export class ReviewsModule {}
