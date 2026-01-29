@@ -1,4 +1,4 @@
-import { Body, Controller, Param, ParseUUIDPipe, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Param, ParseUUIDPipe, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { AddReviewDTO } from './dto/reviews.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -23,5 +23,12 @@ export class ReviewsController {
     @Param('id', ParseUUIDPipe) productId: string
   ) {
     return this.reviewsService.createReview(productId,body,files);
+  }
+
+  @Delete(':id')
+  deleteReview(
+    @Param('id', ParseUUIDPipe) reviewId: string
+  ) {
+    return this.reviewsService.removeReview(reviewId);
   }
 }

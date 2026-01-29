@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductReview } from './entities/reviews.entity';
 import { Repository } from 'typeorm';
@@ -36,6 +36,31 @@ export class ReviewsService {
     return {
         id: review.id,
         message: 'Review Added!'
+    }
+  }
+
+  async getReviewById(id: string): Promise<ProductReview> {
+    const review = await this.reviewRepository.findOne({
+        where: {
+            id,
+        }
+    })
+    if (!review) {
+        throw new NotFoundException('Review Not Found!')
+    }
+    return review;
+  }
+
+  async removeReview(id: string): Promise<ConfirmationMsg> {
+    const review = await this.getReviewById(id);
+    const reviewId = review.id;
+    if (review.media && review.media.length > 0) {
+        await Promise.all(review.media.map(media => this.cloudinaryService.deleteFile(media.cloudinaryPublicId)))
+    }
+    await this.reviewRepository.remove(review);
+    return {
+        id: reviewId,
+        message: 'Review deleted!'
     }
   }
 }
