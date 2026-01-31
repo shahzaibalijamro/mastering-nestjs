@@ -11,7 +11,7 @@ export class Store {
     @Column({unique: true})
     @IsNotEmpty()
     @IsString()
-    @Length(3, 20)
+    @Length(3, 50)
     name: string;
 
     @Column({type: 'text'})
@@ -27,9 +27,7 @@ export class Store {
     owner: User;
 
     @OneToMany(
-        type => Product, product => product.store, {
-            eager: true
-        }
+        type => Product, product => product.store
     )
     products: Product;
 }

@@ -3,7 +3,7 @@ import { IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
 import { Store } from 'src/store/entities/store.entity';
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-enum UserRole {
+export enum UserRole {
   USER = 'USER',
   ADMIN = 'ADMIN',
 }
@@ -16,14 +16,14 @@ export class User {
   @Column({ unique: true })
   @IsNotEmpty()
   @IsString()
-  @Transform(({ value }) => value.toLowerCase())
-  @Length(3, 15)
+  @Transform(({ value }) => value.trim().toLowerCase())
+  @Length(3, 40)
   username: string;
 
   @Column()
   @IsNotEmpty()
   @IsString()
-  @Length(3, 25)
+  @Length(3, 50)
   name: string;
 
   @Column()
@@ -37,9 +37,7 @@ export class User {
   role: UserRole;
 
   @OneToOne(
-    type => Store, store => store.owner, {
-        eager: true
-    }
+    type => Store, store => store.owner
   )
   store: Store;
 }

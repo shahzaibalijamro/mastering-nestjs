@@ -20,14 +20,17 @@ export class UserSubscriber implements EntitySubscriberInterface<User> {
   }
 
   async afterInsert(event: InsertEvent<User>): Promise<void> {
-    const storeRepository = event.manager.getRepository(Store);
-    const store = await storeRepository.save({
-      name: `${event.entity.name}'s Store`,
-      description: `Welcome to ${event.entity.name}'s Store`,
-      owner: event.entity,
-    });
+    await event.manager
+      .createQueryBuilder()
+      .insert()
+      .into(Store)
+      .values({
+        name: `${event.entity.name}'s Store`,
+        description: `Welcome to ${event.entity.name}'s store!`,
+        owner: { id: event.entity.id },
+      })
+      .execute();
     console.log({
-      id: store.id,
       message: 'Store created and assigned to the newly created User!',
     });
     return;
