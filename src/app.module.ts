@@ -7,6 +7,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { TagsModule } from './tags/tags.module';
+import { AuthModule } from './auth/auth.module';
+import { UserModule } from './user/user.module';
+import { StoreModule } from './store/store.module';
 
 @Module({
   imports: [
@@ -30,6 +33,9 @@ import { TagsModule } from './tags/tags.module';
     CloudinaryModule,
     ReviewsModule,
     TagsModule,
+    AuthModule,
+    UserModule,
+    StoreModule,
   ],
   controllers: [],
   exports: [],

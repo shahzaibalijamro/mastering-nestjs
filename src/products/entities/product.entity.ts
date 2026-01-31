@@ -3,6 +3,7 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
@@ -10,6 +11,7 @@ import { ProductReview } from '../../reviews/entities/reviews.entity';
 import { Tag } from '../../tags/entities/tags.entity';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUrl, MinLength, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Store } from 'src/store/entities/store.entity';
 
 export enum MediaType {
   video = 'video',
@@ -79,4 +81,11 @@ export class Product {
     },
   })
   tags: Tag[];
+
+  @ManyToOne(
+    type => Store, store => store.products, {
+      eager: true
+    }
+  )
+  store: Store;
 }
