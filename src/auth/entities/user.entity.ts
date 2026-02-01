@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
 import { Store } from 'src/store/entities/store.entity';
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
@@ -19,6 +19,13 @@ export class User {
   @Transform(({ value }) => value.trim().toLowerCase())
   @Length(3, 40)
   username: string;
+
+  @Column({unique: true})
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => value.trim())
+  @IsEmail()
+  email: string;
 
   @Column()
   @IsNotEmpty()
