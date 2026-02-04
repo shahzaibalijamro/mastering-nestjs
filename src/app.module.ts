@@ -10,6 +10,7 @@ import { TagsModule } from './tags/tags.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { StoreModule } from './store/store.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
   imports: [
@@ -29,6 +30,17 @@ import { StoreModule } from './store/store.module';
           autoLoadEntities: true,
         };
       },
+    }),
+    JwtModule.registerAsync({
+      global: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        secret: config.get<string>('JWT_SECRET'),
+        signOptions: {
+          expiresIn: '1h'
+        }
+      })
     }),
     CloudinaryModule,
     ReviewsModule,

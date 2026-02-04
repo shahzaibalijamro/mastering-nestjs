@@ -8,7 +8,7 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
-import { UserRole } from '../entities/user.entity';
+import { UserRole } from '../../user/entities/user.entity';
 import { Transform } from 'class-transformer';
 
 export class CreateUserDTO {

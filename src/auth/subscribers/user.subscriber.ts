@@ -4,7 +4,7 @@ import {
   EventSubscriber,
   InsertEvent,
 } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { Store } from 'src/store/entities/store.entity';
 import { ConfirmationMsg } from 'src/utils/confirmation.interface';

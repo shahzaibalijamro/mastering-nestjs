@@ -1,15 +1,24 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User, UserRole } from './entities/user.entity';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
+import { User, UserRole } from '../user/entities/user.entity';
+import { ConfirmationMsg, Token } from '../utils/confirmation.interface';
 import { CreateUserDTO, SignInDTO } from './dto/user.dto';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    private readonly jwtService: JwtService,
+    private readonly userService: UserService,
+
   ) {}
 
   async createUser(body: CreateUserDTO): Promise<ConfirmationMsg> {
@@ -26,17 +35,17 @@ export class AuthService {
     };
   }
 
-  async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
-    const user = await this.userRepository.findOne({
-      where: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
-    });
-    if (!user) {
-        throw new NotFoundException('User not found!')
-    }
-    return user;
-  }
+  
 
-  async signIn(body: SignInDTO) {
+  async signIn(body: SignInDTO): Promise<Token> {
     const { usernameOrEmail, password } = body;
+    const user = await this.userService.getUserByUsernameOrEmail(usernameOrEmail);
+    if (!bcrypt.compareSync(password, user.password)) {
+      throw new UnauthorizedException('Invalid credentials!');
+    }
+    const payload = { sub: user.id, username: user.username };
+    return {
+      token: this.jwtService.sign(payload),
+    };
   }
 }

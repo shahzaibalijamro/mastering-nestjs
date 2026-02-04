@@ -1,15 +1,29 @@
 import {
   Column,
+  CreateDateColumn,
   Entity,
   JoinTable,
   ManyToMany,
   ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ProductReview } from '../../reviews/entities/reviews.entity';
 import { Tag } from '../../tags/entities/tags.entity';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsNotEmpty, IsNumber, IsPositive, IsString, IsUrl, MinLength, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsEnum,
+  IsNotEmpty,
+  IsNumber,
+  IsPositive,
+  IsString,
+  IsUrl,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { Store } from 'src/store/entities/store.entity';
 
@@ -47,7 +61,7 @@ export class Product {
   description: string;
 
   @Column('decimal', { precision: 10, scale: 2 })
-  @Type(type => Number)
+  @Type((type) => Number)
   @IsNumber()
   @IsPositive()
   price: number;
@@ -55,7 +69,7 @@ export class Product {
   @Column('json')
   @IsArray()
   @ValidateNested({ each: true })
-  @Type(type => Media)
+  @Type((type) => Media)
   @ArrayMinSize(1)
   @ArrayMaxSize(10)
   media: Media[];
@@ -67,7 +81,7 @@ export class Product {
   reviews: ProductReview[];
 
   @ManyToMany((type) => Tag, (tag) => tag.products, {
-    eager: true
+    eager: true,
   })
   @JoinTable({
     name: 'product_tags',
@@ -82,10 +96,14 @@ export class Product {
   })
   tags: Tag[];
 
-  @ManyToOne(
-    type => Store, store => store.products, {
-      eager: true
-    }
-  )
+  @ManyToOne((type) => Store, (store) => store.products, {
+    eager: true,
+  })
   store: Store;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

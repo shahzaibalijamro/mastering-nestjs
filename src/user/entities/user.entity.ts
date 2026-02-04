@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
 import { Store } from 'src/store/entities/store.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 export enum UserRole {
   USER = 'USER',
@@ -47,4 +47,10 @@ export class User {
     type => Store, store => store.owner
   )
   store: Store;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

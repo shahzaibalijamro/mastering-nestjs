@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, Length } from "class-validator";
-import { User } from "src/auth/entities/user.entity";
+import { User } from "src/user/entities/user.entity";
 import { Product } from "src/products/entities/product.entity";
-import { Column, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Store {
@@ -30,4 +30,10 @@ export class Store {
         type => Product, product => product.store
     )
     products: Product;
+    
+      @CreateDateColumn()
+      createdAt: Date;
+    
+      @UpdateDateColumn()
+      updatedAt: Date;
 }

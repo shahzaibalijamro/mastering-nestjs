@@ -1,4 +1,11 @@
-import { Column, Entity, ManyToMany, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
 import { IsString, MinLength } from 'class-validator';
 
@@ -14,4 +21,10 @@ export class Tag {
 
   @ManyToMany((type) => Product, (product) => product.tags)
   products: Product[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

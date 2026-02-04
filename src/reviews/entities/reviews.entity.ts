@@ -1,6 +1,24 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { Media, Product } from '../../products/entities/product.entity';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsNumber, IsOptional, IsString, Length, Min, MinLength, ValidateNested } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayMinSize,
+  IsArray,
+  IsNumber,
+  IsOptional,
+  IsString,
+  Length,
+  Min,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 
 @Entity()
@@ -20,16 +38,22 @@ export class ProductReview {
   text?: string;
 
   @IsOptional()
-  @Column({type: 'json', nullable: true})
+  @Column({ type: 'json', nullable: true })
   @IsArray()
-  @Type(type => Media)
-  @ValidateNested({each: true})
+  @Type((type) => Media)
+  @ValidateNested({ each: true })
   @ArrayMaxSize(5)
   media?: Media[];
 
   @Column('decimal', { precision: 2, scale: 1 })
-  @Type(type => Number)
+  @Type((type) => Number)
   @Length(1, 5)
   @IsNumber()
   stars: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }
