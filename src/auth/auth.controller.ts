@@ -1,7 +1,9 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDTO } from './dto/user.dto';
+import { CreateUserDTO, SignInDTO } from './dto/user.dto';
 import { ConfirmationMsg } from 'src/utils/confirmation.interface';
+import { AuthGuard } from '@nestjs/passport';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -14,5 +16,13 @@ export class AuthController {
         @Body() body: CreateUserDTO,
     ): Promise<ConfirmationMsg>{
         return this.authService.createUser(body);
+    }
+
+    @UseGuards(LocalAuthGuard)
+    @Post('signin')
+    signIn(
+        @Request() req
+    ) {
+        return req.user;
     }
 }

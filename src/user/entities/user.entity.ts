@@ -1,7 +1,8 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
 import { Store } from 'src/store/entities/store.entity';
-import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { BeforeInsert, Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import * as bcrypt from 'bcrypt'
 
 export enum UserRole {
   USER = 'USER',
@@ -53,4 +54,9 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @BeforeInsert()
+  hashPassword(): void {
+    this.password = bcrypt.hashSync(this.password, 10);
+  }
 }
