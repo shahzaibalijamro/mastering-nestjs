@@ -1,7 +1,7 @@
 import { IsNotEmpty, IsString, Length } from "class-validator";
 import { User } from "src/user/entities/user.entity";
 import { Product } from "src/products/entities/product.entity";
-import { Column, CreateDateColumn, Entity, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity()
 export class Store {
@@ -24,12 +24,13 @@ export class Store {
             eager: true
         }
     )
+    @JoinColumn({name: 'ownerId'})  // ← ADD THIS
     owner: User;
 
     @OneToMany(
         type => Product, product => product.store
     )
-    products: Product;
+    products: Product[];
     
       @CreateDateColumn()
       createdAt: Date;

@@ -1,9 +1,10 @@
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDTO, SignInDTO } from './dto/user.dto';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
+import { CreateUserDTO } from './dto/user.dto';
+import { ConfirmationMsg, Token } from 'src/utils/confirmation.interface';
 import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import { UserWithoutPassword } from './interfaces/user.interface';
 
 @Controller('auth')
 export class AuthController {
@@ -18,11 +19,12 @@ export class AuthController {
         return this.authService.createUser(body);
     }
 
-    @UseGuards(LocalAuthGuard)
     @Post('signin')
+    @UseGuards(LocalAuthGuard)
     signIn(
         @Request() req
-    ) {
-        return req.user;
+    ): Promise<Token> {
+        const user:UserWithoutPassword = req.user;
+        return this.authService.signIn(user);
     }
 }

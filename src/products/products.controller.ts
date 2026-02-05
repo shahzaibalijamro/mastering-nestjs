@@ -9,6 +9,7 @@ import {
   Patch,
   Post,
   UploadedFiles,
+  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
@@ -21,8 +22,10 @@ import {
 } from './dto/products.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileValidationInterceptor } from '../interceptors/file-validation.interceptor';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 
 @Controller('products')
+@UseGuards(JwtAuthGuard)
 export class ProductsController {
   constructor(
     private productsService: ProductsService

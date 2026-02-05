@@ -6,11 +6,12 @@ import { User } from '../user/entities/user.entity';
 import { UserSubscriber } from './subscribers/user.subscriber';
 import { UserModule } from 'src/user/user.module';
 import { LocalStrategy } from './strategies/local.strategy';
+import { JWTStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), UserModule],
   controllers: [AuthController],
-  providers: [AuthService, UserSubscriber, LocalStrategy],
+  providers: [AuthService, UserSubscriber, LocalStrategy, JWTStrategy],
   exports: [AuthService]
 })
 export class AuthModule {}

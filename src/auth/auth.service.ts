@@ -7,10 +7,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from '../user/entities/user.entity';
 import { ConfirmationMsg, Token } from '../utils/confirmation.interface';
-import { CreateUserDTO, SignInDTO } from './dto/user.dto';
+import { CreateUserDTO, ValidateUserDTO } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
+import { TokenPayload, UserWithoutPassword } from './interfaces/user.interface';
 
 @Injectable()
 export class AuthService {
@@ -33,7 +34,7 @@ export class AuthService {
     };
   }
 
-  async signIn(body: SignInDTO) {
+  async validateUser(body: ValidateUserDTO): Promise<UserWithoutPassword | null> {
     const { usernameOrEmail, password } = body;
     const user =
       await this.userService.getUserByUsernameOrEmail(usernameOrEmail);
@@ -44,6 +45,16 @@ export class AuthService {
       return result;
     } else {
       return null;
+    }
+  }
+
+   async signIn(user: UserWithoutPassword): Promise<Token> {
+    const payload: TokenPayload = {
+      sub: user.id,
+      username: user.username
+    }
+    return {
+      token: await this.jwtService.signAsync(payload)
     }
   }
 }

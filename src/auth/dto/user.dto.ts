@@ -42,7 +42,7 @@ export class CreateUserDTO {
   role: UserRole;
 }
 
-export class SignInDTO {
+export class ValidateUserDTO {
   @IsNotEmpty()
   @IsString()
   @MinLength(8)
