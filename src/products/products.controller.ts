@@ -23,6 +23,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileValidationInterceptor } from '../interceptors/file-validation.interceptor';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Public } from 'src/utils/public.decorator';
 
 @Controller('products')
 @UseGuards(JwtAuthGuard)
@@ -31,6 +32,7 @@ export class ProductsController {
     private productsService: ProductsService
   ) {}
 
+  @Public()
   @Get()
   getProducts(): Promise<Product[]> {
     return this.productsService.getProducts();
