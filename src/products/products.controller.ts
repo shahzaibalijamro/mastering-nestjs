@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Req,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -28,9 +29,7 @@ import { Public } from 'src/utils/public.decorator';
 @Controller('products')
 @UseGuards(JwtAuthGuard)
 export class ProductsController {
-  constructor(
-    private productsService: ProductsService
-  ) {}
+  constructor(private productsService: ProductsService) {}
 
   @Public()
   @Get()
@@ -38,6 +37,7 @@ export class ProductsController {
     return this.productsService.getProducts();
   }
 
+  @Public()
   @Get(':id')
   getProductById(@Param('id', ParseUUIDPipe) id: string): Promise<Product> {
     return this.productsService.getProductById(id);
@@ -55,8 +55,9 @@ export class ProductsController {
   async addProduct(
     @Body() body: CreateProductDTO,
     @UploadedFiles() files: Array<Express.Multer.File>,
+    @Req() req
   ) {
-    return this.productsService.addProduct(body, files);
+    return this.productsService.addProduct(body, files, req.user);
   }
 
   @Patch(':id')
@@ -73,9 +74,7 @@ export class ProductsController {
   }
 
   @Delete()
-  deleteMultipleProducts(
-    @Body() body: deleteMultipleProductsDTO
-  ) {
+  deleteMultipleProducts(@Body() body: deleteMultipleProductsDTO) {
     return this.productsService.deleteMultipleProducts(body);
   }
 

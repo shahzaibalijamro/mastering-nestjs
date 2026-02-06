@@ -1,14 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { AuthService } from '../auth.service';
 import { ConfigService } from '@nestjs/config';
 import { TokenPayload } from '../interfaces/user.interface';
+import { UserService } from 'src/user/user.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class JWTStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private readonly authService: AuthService,
+    private readonly userService: UserService,
     private readonly configService: ConfigService,
   ) {
     const secret = configService.get<string>('JWT_SECRET');
@@ -22,7 +23,13 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: TokenPayload) {
-    return { userId: payload.sub, username: payload.username };
+  async validate(payload: TokenPayload): Promise<User> {
+    const user = await this.userService.getUserByUsernameOrEmail(
+      payload.username,
+    );
+    if (!user) {
+      throw new UnauthorizedException('User no longer exists');
+    }
+    return user;
   }
 }

@@ -21,7 +21,8 @@ export class Store {
 
     @OneToOne(
         (type) => User, (user) => user.store, {
-            eager: true
+            eager: true,
+            onDelete: 'CASCADE'
         }
     )
     @JoinColumn({name: 'ownerId'})  // ← ADD THIS

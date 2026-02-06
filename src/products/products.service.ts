@@ -17,14 +17,19 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';
 import { formatCloudinaryMediaFiles } from 'src/utils/utils';
 import { TagsService } from 'src/tags/tags.service';
+import { TokenPayload } from 'src/auth/interfaces/user.interface';
+import { User } from 'src/user/entities/user.entity';
+import { StoreService } from 'src/store/store.service';
+import { Tag } from 'src/tags/entities/tags.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
-    private cloudinaryService: CloudinaryService,
+    private readonly cloudinaryService: CloudinaryService,
     private readonly tagsService: TagsService,
+    private readonly storeService: StoreService,
   ) {}
 
   async getProducts(): Promise<Product[]> {
@@ -34,29 +39,50 @@ export class ProductsService {
   async addProduct(
     body: CreateProductDTO,
     files: Array<Express.Multer.File>,
+    user: User,
   ): Promise<ConfirmationMsg> {
+    //destructure
     const { name, description, price, tagIds } = body;
-    const UploadedFiles: UploadApiResponse[] =
-      await this.cloudinaryService.uploadFiles(files);
-      console.log(UploadedFiles);
-      
-    const media: Media[] = formatCloudinaryMediaFiles(UploadedFiles);
-    const product = this.productRepository.create({
-      description,
-      price,
-      name,
-      media,
-    });
+
+    //tags fetch
+    let tags: Tag[] = [];
     if (tagIds?.length > 0) {
-      product.tags = await Promise.all(
+      tags = await Promise.all(
         tagIds.map((id) => this.tagsService.findTagById(id)),
       );
     }
-    await this.productRepository.save(product);
-    return {
-      id: product.id,
-      message: 'Product added!',
-    };
+
+    // fetch user's store
+    const store = await this.storeService.getStoreByUser(user);
+
+    // upload media and format
+    const UploadedFiles: UploadApiResponse[] =
+      await this.cloudinaryService.uploadFiles(files);
+    const media: Media[] = formatCloudinaryMediaFiles(UploadedFiles);
+
+    try {
+      //save product
+      const product = this.productRepository.create({
+        description,
+        price,
+        name,
+        media,
+        store,
+        tags,
+      });
+      await this.productRepository.save(product);
+      return {
+        id: product.id,
+        message: 'Product added!',
+      };
+    } catch (error) {
+      await Promise.all(
+        media.map((file) =>
+          this.cloudinaryService.deleteFile(file.cloudinaryPublicId),
+        ),
+      );
+      throw error;
+    }
   }
 
   async getProductById(id: string): Promise<Product> {

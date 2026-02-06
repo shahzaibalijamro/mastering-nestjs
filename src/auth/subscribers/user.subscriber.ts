@@ -27,7 +27,7 @@ export class UserSubscriber implements EntitySubscriberInterface<User> {
       .values({
         name: `${event.entity.name}'s Store`,
         description: `Welcome to ${event.entity.name}'s store!`,
-        owner: { id: event.entity.id },
+        owner: event.entity,
       })
       .execute();
     console.log({
