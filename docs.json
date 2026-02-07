@@ -1,0 +1,1153 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/products": {
+      "get": {
+        "operationId": "ProductsController_getProducts",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of products.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Product"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List products",
+        "tags": [
+          "Products"
+        ]
+      },
+      "post": {
+        "operationId": "ProductsController_addProduct",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "description": "Product data plus media files.",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "description",
+                  "price"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "minLength": 3,
+                    "example": "Canvas Sneakers"
+                  },
+                  "description": {
+                    "type": "string",
+                    "minLength": 3,
+                    "example": "Lightweight everyday sneakers with breathable canvas."
+                  },
+                  "price": {
+                    "type": "number",
+                    "example": 79.99
+                  },
+                  "tagIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "example": [
+                      "baf1b2d4-6a2b-4e9f-9f0f-0a6d73d5f2e1"
+                    ]
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product created."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a product with media",
+        "tags": [
+          "Products"
+        ]
+      },
+      "delete": {
+        "operationId": "ProductsController_deleteMultipleProducts",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/deleteMultipleProductsDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Products deleted."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete multiple products",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/{id}": {
+      "get": {
+        "operationId": "ProductsController_getProductById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Product"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Product not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get product by ID",
+        "tags": [
+          "Products"
+        ]
+      },
+      "patch": {
+        "operationId": "ProductsController_updateProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProductDTORaw"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product updated."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Product not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Update a product",
+        "tags": [
+          "Products"
+        ]
+      },
+      "delete": {
+        "operationId": "ProductsController_deleteProduct",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Product deleted."
+          },
+          "401": {
+            "description": "Unauthorized."
+          },
+          "404": {
+            "description": "Product not found."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete a product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/products/{id}/media": {
+      "patch": {
+        "operationId": "ProductsController_updateProductMedia",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Media replacement payload with a single file.",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "cloudinaryPublicId": {
+                    "type": "string",
+                    "example": "products/abc123"
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product media updated."
+          },
+          "400": {
+            "description": "No file received."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace a product media item",
+        "tags": [
+          "Products"
+        ]
+      },
+      "post": {
+        "operationId": "ProductsController_addProductMedia",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Upload one or more media files.",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Product media added."
+          },
+          "400": {
+            "description": "No new files received."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Add media to a product",
+        "tags": [
+          "Products"
+        ]
+      },
+      "delete": {
+        "operationId": "ProductsController_deleteProductMedia",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ids": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "example": [
+                      "products/abc123"
+                    ]
+                  }
+                },
+                "required": [
+                  "ids"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Product media deleted."
+          },
+          "400": {
+            "description": "No cloudinaryPublicIds received."
+          },
+          "401": {
+            "description": "Unauthorized."
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Delete media from a product",
+        "tags": [
+          "Products"
+        ]
+      }
+    },
+    "/tags": {
+      "post": {
+        "operationId": "TagsController_addTag",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/addTagDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Tag created."
+          }
+        },
+        "summary": "Create a tag",
+        "tags": [
+          "Tags"
+        ]
+      },
+      "get": {
+        "operationId": "TagsController_getAllTasks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "List of tags.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Tag"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List all tags",
+        "tags": [
+          "Tags"
+        ]
+      }
+    },
+    "/tags/{id}": {
+      "get": {
+        "operationId": "TagsController_getTaskById",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tag ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tag found.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Tag"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Tag not found."
+          }
+        },
+        "summary": "Get tag by ID",
+        "tags": [
+          "Tags"
+        ]
+      },
+      "delete": {
+        "operationId": "TagsController_deleteTask",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Tag ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tag deleted."
+          },
+          "404": {
+            "description": "Tag not found."
+          }
+        },
+        "summary": "Delete tag by ID",
+        "tags": [
+          "Tags"
+        ]
+      }
+    },
+    "/reviews/{id}": {
+      "post": {
+        "operationId": "ReviewsController_addReview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Product ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "description": "Review payload with optional media.",
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "stars"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string",
+                    "minLength": 3,
+                    "example": "Great quality and fast shipping."
+                  },
+                  "stars": {
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 5,
+                    "example": 4.5
+                  },
+                  "files": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Review created."
+          },
+          "404": {
+            "description": "Product not found."
+          }
+        },
+        "summary": "Add a review to a product",
+        "tags": [
+          "Reviews"
+        ]
+      },
+      "delete": {
+        "operationId": "ReviewsController_deleteReview",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "description": "Review ID (UUID)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review deleted."
+          },
+          "404": {
+            "description": "Review not found."
+          }
+        },
+        "summary": "Delete a review",
+        "tags": [
+          "Reviews"
+        ]
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "operationId": "AuthController_signUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "0f0d50d8-6d14-4e2c-97ad-0ed4e2ea2f2c"
+                    },
+                    "message": {
+                      "type": "string",
+                      "example": "User created!"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a new user account",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "operationId": "AuthController_signIn",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ValidateUserDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "JWT token returned.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Sign in and get a JWT",
+        "tags": [
+          "Auth"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Ecommerce API",
+    "description": "API documentation for the ecommerce backend",
+    "version": "1.0",
+    "contact": {
+
+    }
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "type": "http"
+      }
+    },
+    "schemas": {
+      "Media": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "video",
+              "image"
+            ],
+            "type": "string",
+            "description": "Media type.",
+            "example": "image"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Public URL for the media asset.",
+            "example": "https://res.cloudinary.com/demo/image/upload/v123/product.jpg"
+          },
+          "cloudinaryPublicId": {
+            "type": "string",
+            "description": "Cloudinary public ID for managing the asset.",
+            "example": "products/abc123"
+          }
+        },
+        "required": [
+          "type",
+          "url",
+          "cloudinaryPublicId"
+        ]
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Tag ID (UUID).",
+            "example": "a2f1b2c3-4d5e-6f70-8a9b-0c1d2e3f4a5b"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Tag name.",
+            "example": "Footwear"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "products",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 40
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50
+          },
+          "password": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "USER",
+              "ADMIN"
+            ]
+          },
+          "store": {
+            "$ref": "#/components/schemas/Store"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "username",
+          "email",
+          "name",
+          "password",
+          "role",
+          "store",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "Store": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 50
+          },
+          "description": {
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/User"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Product"
+            }
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "owner",
+          "products",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "Product": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Product ID (UUID).",
+            "example": "0f0d50d8-6d14-4e2c-97ad-0ed4e2ea2f2c"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Human-readable product name.",
+            "example": "Canvas Sneakers"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 10,
+            "description": "Product description.",
+            "example": "Lightweight everyday sneakers with breathable canvas."
+          },
+          "price": {
+            "type": "number",
+            "minimum": 1,
+            "description": "Unit price in the store currency.",
+            "example": 79.99
+          },
+          "media": {
+            "minItems": 1,
+            "maxItems": 10,
+            "description": "Media assets attached to the product.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Media"
+            }
+          },
+          "reviews": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductReview"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "store": {
+            "$ref": "#/components/schemas/Store"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "price",
+          "media",
+          "reviews",
+          "tags",
+          "store",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ProductReview": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Review ID (UUID).",
+            "example": "9c1c1d8b-5f2b-4f7a-9e42-1f4e8e2c1c0a"
+          },
+          "text": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Optional review text.",
+            "example": "Great quality and fast shipping."
+          },
+          "media": {
+            "maxItems": 5,
+            "description": "Optional media attached to the review.",
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Media"
+            }
+          },
+          "stars": {
+            "type": "number",
+            "minLength": 1,
+            "maxLength": 5,
+            "description": "Star rating for the product (1-5).",
+            "example": 4.5
+          },
+          "product": {
+            "$ref": "#/components/schemas/Product"
+          },
+          "createdAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "stars",
+          "product",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "UpdateProductDTORaw": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Human-readable product name.",
+            "example": "Canvas Sneakers"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Product description for listing pages and detail view.",
+            "example": "Lightweight everyday sneakers with breathable canvas."
+          },
+          "price": {
+            "type": "number",
+            "minimum": 0,
+            "description": "Unit price in the store currency.",
+            "example": 79.99
+          },
+          "tagIds": {
+            "description": "Tag IDs to associate with the product.",
+            "example": [
+              "baf1b2d4-6a2b-4e9f-9f0f-0a6d73d5f2e1"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        }
+      },
+      "deleteMultipleProductsDTO": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "minItems": 1,
+            "description": "List of product IDs to delete.",
+            "example": [
+              "0f0d50d8-6d14-4e2c-97ad-0ed4e2ea2f2c"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      },
+      "addTagDTO": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Tag display name.",
+            "example": "Footwear"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "CreateUserDTO": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 25,
+            "description": "Unique username (lowercased).",
+            "example": "jane_doe"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "User email address.",
+            "example": "jane@example.com"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 25,
+            "description": "Full name for display.",
+            "example": "Jane Doe"
+          },
+          "password": {
+            "type": "string",
+            "pattern": "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_#^()\\-+=]).{8,}$/",
+            "description": "Password with at least 8 chars, one uppercase, one lowercase, one number, one special character.",
+            "example": "Str0ng#Pass1"
+          },
+          "role": {
+            "enum": [
+              "USER",
+              "ADMIN"
+            ],
+            "type": "string",
+            "description": "User role (admin or standard user).",
+            "example": "USER"
+          }
+        },
+        "required": [
+          "username",
+          "email",
+          "name",
+          "password"
+        ]
+      },
+      "ValidateUserDTO": {
+        "type": "object",
+        "properties": {
+          "usernameOrEmail": {
+            "type": "string",
+            "minLength": 8,
+            "description": "Username or email.",
+            "example": "jane@example.com"
+          },
+          "password": {
+            "type": "string",
+            "pattern": "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&_#^()\\-+=]).{8,}$/",
+            "description": "Password with at least 8 chars, one uppercase, one lowercase, one number, one special character.",
+            "example": "Str0ng#Pass1"
+          }
+        },
+        "required": [
+          "usernameOrEmail",
+          "password"
+        ]
+      }
+    }
+  }
+}

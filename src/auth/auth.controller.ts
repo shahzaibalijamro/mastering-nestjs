@@ -1,18 +1,33 @@
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateUserDTO } from './dto/user.dto';
+import { CreateUserDTO, ValidateUserDTO } from './dto/user.dto';
 import { ConfirmationMsg, Token } from 'src/utils/confirmation.interface';
 import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserWithoutPassword } from './interfaces/user.interface';
+import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 @Controller('auth')
+@ApiTags('Auth')
 export class AuthController {
     constructor(
         private readonly authService: AuthService
     ) {}
 
     @Post('signup')
+    @ApiOperation({ summary: 'Create a new user account' })
+    @ApiBody({ type: CreateUserDTO })
+    @ApiResponse({
+        status: 201,
+        description: 'User created.',
+        schema: {
+            type: 'object',
+            properties: {
+                id: { type: 'string', example: '0f0d50d8-6d14-4e2c-97ad-0ed4e2ea2f2c' },
+                message: { type: 'string', example: 'User created!' },
+            },
+        },
+    })
     signUp(
         @Body() body: CreateUserDTO,
     ): Promise<ConfirmationMsg>{
@@ -21,6 +36,18 @@ export class AuthController {
 
     @Post('signin')
     @UseGuards(LocalAuthGuard)
+    @ApiOperation({ summary: 'Sign in and get a JWT' })
+    @ApiBody({ type: ValidateUserDTO })
+    @ApiResponse({
+        status: 200,
+        description: 'JWT token returned.',
+        schema: {
+            type: 'object',
+            properties: {
+                token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+            },
+        },
+    })
     signIn(
         @Request() req
     ): Promise<Token> {

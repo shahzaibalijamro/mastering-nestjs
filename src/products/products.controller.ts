@@ -25,25 +25,71 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileValidationInterceptor } from '../interceptors/file-validation.interceptor';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { Public } from 'src/utils/public.decorator';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @Controller('products')
 @UseGuards(JwtAuthGuard)
+@ApiTags('Products')
+@ApiBearerAuth()
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
   @Public()
   @Get()
+  @ApiOperation({ summary: 'List products' })
+  @ApiResponse({ status: 200, description: 'List of products.', type: Product, isArray: true })
   getProducts(): Promise<Product[]> {
     return this.productsService.getProducts();
   }
 
   @Public()
   @Get(':id')
+  @ApiOperation({ summary: 'Get product by ID' })
+  @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
+  @ApiResponse({ status: 200, description: 'Product found.', type: Product })
+  @ApiResponse({ status: 404, description: 'Product not found.' })
   getProductById(@Param('id', ParseUUIDPipe) id: string): Promise<Product> {
     return this.productsService.getProductById(id);
   }
 
   @Post()
+  @ApiOperation({ summary: 'Create a product with media' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Product data plus media files.',
+    schema: {
+      type: 'object',
+      required: ['name', 'description', 'price'],
+      properties: {
+        name: { type: 'string', minLength: 3, example: 'Canvas Sneakers' },
+        description: {
+          type: 'string',
+          minLength: 3,
+          example: 'Lightweight everyday sneakers with breathable canvas.',
+        },
+        price: { type: 'number', example: 79.99 },
+        tagIds: {
+          type: 'array',
+          items: { type: 'string', format: 'uuid' },
+          example: ['baf1b2d4-6a2b-4e9f-9f0f-0a6d73d5f2e1'],
+        },
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Product created.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @UseInterceptors(
     FilesInterceptor('files', 10, {
       limits: {
@@ -61,6 +107,11 @@ export class ProductsController {
   }
 
   @Patch(':id')
+  @ApiOperation({ summary: 'Update a product' })
+  @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
+  @ApiResponse({ status: 200, description: 'Product updated.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 404, description: 'Product not found.' })
   updateProduct(
     @Body() body: UpdateProductDTORaw,
     @Param('id', ParseUUIDPipe) id: string,
@@ -70,16 +121,44 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @ApiOperation({ summary: 'Delete a product' })
+  @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
+  @ApiResponse({ status: 200, description: 'Product deleted.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
+  @ApiResponse({ status: 404, description: 'Product not found.' })
   deleteProduct(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
     return this.productsService.deleteProduct(id, req.user);
   }
 
   @Delete()
+  @ApiOperation({ summary: 'Delete multiple products' })
+  @ApiBody({ type: deleteMultipleProductsDTO })
+  @ApiResponse({ status: 200, description: 'Products deleted.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   deleteMultipleProducts(@Body() body: deleteMultipleProductsDTO, @Req() req) {
     return this.productsService.deleteMultipleProducts(body, req.user);
   }
 
   @Patch(':id/media')
+  @ApiOperation({ summary: 'Replace a product media item' })
+  @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Media replacement payload with a single file.',
+    schema: {
+      type: 'object',
+      properties: {
+        cloudinaryPublicId: { type: 'string', example: 'products/abc123' },
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Product media updated.' })
+  @ApiResponse({ status: 400, description: 'No file received.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @UseInterceptors(
     FilesInterceptor('files', 1, {
       limits: {
@@ -99,6 +178,24 @@ export class ProductsController {
   }
 
   @Post(':id/media')
+  @ApiOperation({ summary: 'Add media to a product' })
+  @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'Upload one or more media files.',
+    schema: {
+      type: 'object',
+      properties: {
+        files: {
+          type: 'array',
+          items: { type: 'string', format: 'binary' },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 201, description: 'Product media added.' })
+  @ApiResponse({ status: 400, description: 'No new files received.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   @UseInterceptors(
     FilesInterceptor('files', 9, {
       limits: {
@@ -118,6 +215,24 @@ export class ProductsController {
   }
 
   @Delete(':id/media')
+  @ApiOperation({ summary: 'Delete media from a product' })
+  @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        ids: {
+          type: 'array',
+          items: { type: 'string' },
+          example: ['products/abc123'],
+        },
+      },
+      required: ['ids'],
+    },
+  })
+  @ApiResponse({ status: 200, description: 'Product media deleted.' })
+  @ApiResponse({ status: 400, description: 'No cloudinaryPublicIds received.' })
+  @ApiResponse({ status: 401, description: 'Unauthorized.' })
   deleteProductMedia(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('ids') cloudinaryPublicIds: Array<string>,

@@ -9,6 +9,9 @@ async function bootstrap() {
     whitelist: true,
     transform: true
   }));
+  app.enableCors({
+    origin: 'http://localhost:3001'
+  })
 
   const config = new DocumentBuilder()
     .setTitle('Ecommerce API')
@@ -17,7 +20,9 @@ async function bootstrap() {
     .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('docs', app, document);
+  SwaggerModule.setup('docs', app, document, {
+    jsonDocumentUrl: 'docs/json'
+  });
 
   await app.listen(process.env.PORT ?? 3000);
 }
