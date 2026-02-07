@@ -34,7 +34,7 @@ export class User {
   @Length(3, 50)
   name: string;
 
-  @Column()
+  @Column({select: false})
   @IsNotEmpty()
   @IsString()
   password: string;

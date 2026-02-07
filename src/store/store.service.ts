@@ -1,8 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Store } from './entities/store.entity';
 import { Repository } from 'typeorm';
 import { User } from 'src/user/entities/user.entity';
+import { Product } from 'src/products/entities/product.entity';
 
 @Injectable()
 export class StoreService {
@@ -11,8 +12,6 @@ export class StoreService {
     ) {}
 
     async getStoreByUser(user: User): Promise<Store> {
-        console.log(user, "USER HERE=>");
-        
         const store = await this.storeRepository.findOne({
             where: {
                 owner: {id: user.id}
@@ -20,6 +19,22 @@ export class StoreService {
         })
         if (!store) {
             throw new NotFoundException('Store does not exist!')
+        }
+        return store;
+    }
+
+
+    async confirmProductInStore(user: User, product: Product): Promise<Store> {
+        const store = await this.storeRepository.findOne({
+            where: {
+                owner: {id: user.id}
+            }
+        })
+        if (!store) {
+            throw new NotFoundException('Store does not exist!')
+        }
+        if (product.store.id !== store.id) {
+            throw new UnauthorizedException("This user does not own the product!")
         }
         return store;
     }

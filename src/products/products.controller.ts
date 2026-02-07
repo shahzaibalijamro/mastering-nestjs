@@ -55,7 +55,7 @@ export class ProductsController {
   async addProduct(
     @Body() body: CreateProductDTO,
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Req() req
+    @Req() req,
   ) {
     return this.productsService.addProduct(body, files, req.user);
   }
@@ -64,18 +64,19 @@ export class ProductsController {
   updateProduct(
     @Body() body: UpdateProductDTORaw,
     @Param('id', ParseUUIDPipe) id: string,
+    @Req() req,
   ) {
-    return this.productsService.updateProduct(id, body);
+    return this.productsService.updateProduct(id, body, req.user);
   }
 
   @Delete(':id')
-  deleteProduct(@Param('id', ParseUUIDPipe) id: string) {
-    return this.productsService.deleteProduct(id);
+  deleteProduct(@Param('id', ParseUUIDPipe) id: string, @Req() req) {
+    return this.productsService.deleteProduct(id, req.user);
   }
 
   @Delete()
-  deleteMultipleProducts(@Body() body: deleteMultipleProductsDTO) {
-    return this.productsService.deleteMultipleProducts(body);
+  deleteMultipleProducts(@Body() body: deleteMultipleProductsDTO, @Req() req) {
+    return this.productsService.deleteMultipleProducts(body, req.user);
   }
 
   @Patch(':id/media')
@@ -91,9 +92,10 @@ export class ProductsController {
     @Body() body: UpdateProductMediaDTO,
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
+    @Req() req
   ) {
     if (files?.length === 0) throw new BadRequestException('No file recieved!');
-    return this.productsService.updateProductMedia(id, body, files[0]);
+    return this.productsService.updateProductMedia(id, body, files[0], req.user);
   }
 
   @Post(':id/media')
@@ -108,19 +110,21 @@ export class ProductsController {
   addProductMedia(
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
+    @Req() req
   ) {
     if (files?.length === 0)
       throw new BadRequestException('No new files recieved!');
-    return this.productsService.addProductMedia(id, files);
+    return this.productsService.addProductMedia(id, files, req.user);
   }
 
   @Delete(':id/media')
   deleteProductMedia(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('ids') cloudinaryPublicIds: Array<string>,
+    @Req() req
   ) {
     if (cloudinaryPublicIds?.length === 0)
       throw new BadRequestException('No cloudinaryPublicIds recieved!');
-    return this.productsService.deleteProductMedia(id, cloudinaryPublicIds);
+    return this.productsService.deleteProductMedia(id, cloudinaryPublicIds, req.user);
   }
 }

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -33,7 +34,9 @@ export class ProductsService {
   ) {}
 
   async getProducts(): Promise<Product[]> {
-    return await this.productRepository.find();
+    return await this.productRepository.find({
+      loadEagerRelations: false
+    });
   }
 
   async addProduct(
@@ -41,6 +44,7 @@ export class ProductsService {
     files: Array<Express.Multer.File>,
     user: User,
   ): Promise<ConfirmationMsg> {
+
     //destructure
     const { name, description, price, tagIds } = body;
 
@@ -76,6 +80,7 @@ export class ProductsService {
         message: 'Product added!',
       };
     } catch (error) {
+      // delete uploaded files if failed
       await Promise.all(
         media.map((file) =>
           this.cloudinaryService.deleteFile(file.cloudinaryPublicId),
@@ -100,9 +105,19 @@ export class ProductsService {
   async updateProduct(
     id: string,
     body: UpdateProductDTO,
+    user: User,
   ): Promise<ConfirmationMsg> {
+
+    // destructure
     const { name, description, price, media } = body;
+
+    // get product and confirm
     const product = await this.getProductById(id);
+
+    // check if user owns the product
+    await this.storeService.confirmProductInStore(user, product);
+
+    //update
     product.name = name || product.name;
     product.description = description || product.description;
     product.price = price || product.price;
@@ -113,24 +128,35 @@ export class ProductsService {
     };
   }
 
-  async deleteProduct(id: string): Promise<ConfirmationMsg> {
+  async deleteProduct(id: string, user: User): Promise<ConfirmationMsg> {
+
+    // confirm product exists
     const product = await this.getProductById(id);
+
+    // confirm user owns the product
+    await this.storeService.confirmProductInStore(user, product);
+
+    // store id to return it later
     const productId = product.id;
+
+    // delete
     await Promise.all(
       product.media.map((item) =>
         this.cloudinaryService.deleteFile(item.cloudinaryPublicId),
       ),
     );
     await this.productRepository.remove(product);
+
+    // return id
     return {
       id: productId,
       message: 'Product deleted!',
     };
   }
 
-  async deleteMultipleProducts(body: deleteMultipleProductsDTO) {
+  async deleteMultipleProducts(body: deleteMultipleProductsDTO, user: User) {
     const { ids } = body;
-    await Promise.all(ids.map((id) => this.deleteProduct(id)));
+    await Promise.all(ids.map((id) => this.deleteProduct(id, user)));
     return {
       message: `Product${ids.length === 1 ? '' : 's'} deleted!`,
     };
@@ -140,24 +166,40 @@ export class ProductsService {
     id: string,
     body: UpdateProductMediaDTO,
     file: Express.Multer.File,
+    user: User,
   ): Promise<ConfirmationMsg> {
+
+    // get media id from frontend
     const { cloudinaryPublicId } = body;
-    const product = await this.getProductById(id);
+
+    // throw error if not found
     if (!cloudinaryPublicId) {
       throw new BadRequestException(
         'cloudinaryPublicId is required for media updation!',
       );
     }
+
+    // confirm product exists
+    const product = await this.getProductById(id);
+
+    // confirm user owns the product
+    await this.storeService.confirmProductInStore(user, product);
+
+    // check if media exists in the product
     const index = product.media.findIndex(
       (media) => media.cloudinaryPublicId === cloudinaryPublicId,
     );
     if (index === -1) {
       throw new NotFoundException('Media not found!');
     }
+
+    // delete old one, upload new one
     const [_, uploadedFile] = await Promise.all([
       this.cloudinaryService.deleteFile(cloudinaryPublicId),
       this.cloudinaryService.uploadFile(file),
     ]);
+
+    // update
     product.media[index].cloudinaryPublicId = uploadedFile.public_id;
     product.media[index].url = uploadedFile.url;
     product.media[index].type = uploadedFile.resource_type as MediaType;
@@ -171,16 +213,28 @@ export class ProductsService {
   async addProductMedia(
     id: string,
     files: Array<Express.Multer.File>,
+    user: User,
   ): Promise<ConfirmationMsg> {
+
+    // fetch product
     const product = await this.getProductById(id);
+
+    // check files limit
     if (files.length > 10 - product.media.length) {
       throw new BadRequestException(
         `Products cannot have more than 10 media files!`,
       );
     }
+
+    // confirm user owns the product
+    await this.storeService.confirmProductInStore(user, product);
+
+    // upload
     const UploadedFiles: UploadApiResponse[] =
       await this.cloudinaryService.uploadFiles(files);
     const media: Media[] = formatCloudinaryMediaFiles(UploadedFiles);
+
+    // add
     product.media = [...product.media, ...media];
     await this.productRepository.save(product);
     return {
@@ -192,14 +246,25 @@ export class ProductsService {
   async deleteProductMedia(
     id: string,
     cloudinaryPublicIds: Array<string>,
+    user: User,
   ): Promise<ConfirmationMsg> {
+    // fetch product
     const product = await this.getProductById(id);
+    
+    // return if user has one media
     if (product.media.length < 2) {
       throw new BadRequestException('Product must at least have one media!');
     }
+
+    // confirm user owns the product
+    await this.storeService.confirmProductInStore(user, product);
+
+    // delete
     await Promise.all(
       cloudinaryPublicIds.map((id) => this.cloudinaryService.deleteFile(id)),
     );
+
+    // update product
     const filteredMedia = product.media.filter(
       (item) => !cloudinaryPublicIds.includes(item.cloudinaryPublicId),
     );
