@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDTO, ValidateUserDTO } from './dto/user.dto';
 import { ConfirmationMsg, Token } from 'src/utils/confirmation.interface';
@@ -6,6 +6,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserWithoutPassword } from './interfaces/user.interface';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { User } from 'src/user/entities/user.entity';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -53,5 +55,14 @@ export class AuthController {
     ): Promise<Token> {
         const user:UserWithoutPassword = req.user;
         return this.authService.signIn(user);
+    }
+
+
+    @Get('verify')
+    @UseGuards(JwtAuthGuard)
+    verifyUser(
+        @Request() req
+    ): Promise<{token: string, user: UserWithoutPassword}> {
+        return this.authService.getNewToken(req.user as UserWithoutPassword);
     }
 }

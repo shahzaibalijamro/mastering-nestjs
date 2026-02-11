@@ -57,4 +57,15 @@ export class AuthService {
       token: await this.jwtService.signAsync(payload)
     }
   }
+
+  async getNewToken(user: UserWithoutPassword): Promise<{token: string, user: UserWithoutPassword}> {
+    const payload: TokenPayload = {
+      sub: user.id,
+      username: user.username
+    }
+    return {
+      token: await this.jwtService.signAsync(payload),
+      user,
+    }
+  }
 }

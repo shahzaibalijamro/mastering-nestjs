@@ -2,7 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { TokenPayload } from '../interfaces/user.interface';
+import { TokenPayload, UserWithoutPassword } from '../interfaces/user.interface';
 import { UserService } from 'src/user/user.service';
 import { User } from 'src/user/entities/user.entity';
 
@@ -23,13 +23,14 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: TokenPayload): Promise<User> {
+  async validate(payload: TokenPayload): Promise<UserWithoutPassword> {
     const user = await this.userService.getUserByUsernameOrEmail(
       payload.username,
     );
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }
-    return user;
+    const { password, ...userWithoutPassword } = user;
+    return userWithoutPassword;
   }
 }
