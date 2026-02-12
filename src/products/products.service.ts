@@ -57,7 +57,7 @@ export class ProductsService {
     }
 
     // fetch user's store
-    const store = await this.storeService.getStoreByUser(user);
+    const store = await this.storeService.getStoreByUser(user.id);
 
     // upload media and format
     const UploadedFiles: UploadApiResponse[] =

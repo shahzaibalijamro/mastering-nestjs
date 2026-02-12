@@ -11,10 +11,10 @@ export class StoreService {
         @InjectRepository(Store) private readonly storeRepository: Repository<Store>
     ) {}
 
-    async getStoreByUser(user: User): Promise<Store> {
+    async getStoreByUser(userId: string): Promise<Store> {
         const store = await this.storeRepository.findOne({
             where: {
-                owner: {id: user.id}
+                owner: {id: userId}
             }
         })
         if (!store) {

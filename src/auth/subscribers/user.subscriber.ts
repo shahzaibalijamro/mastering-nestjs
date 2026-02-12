@@ -3,6 +3,7 @@ import {
   EntitySubscriberInterface,
   EventSubscriber,
   InsertEvent,
+  UpdateEvent,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
@@ -33,6 +34,11 @@ export class UserSubscriber implements EntitySubscriberInterface<User> {
     console.log({
       message: 'Store created and assigned to the newly created User!',
     });
+    return;
+  }
+
+  afterUpdate(event: UpdateEvent<User>): void {
+    console.log(event.updatedColumns, "UPDATED COLUMNS");
     return;
   }
 }

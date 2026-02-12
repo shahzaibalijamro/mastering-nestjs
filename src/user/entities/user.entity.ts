@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsEmail, IsEnum, IsNotEmpty, IsString, Length } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
 import { Store } from 'src/store/entities/store.entity';
 import { BeforeInsert, Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 import * as bcrypt from 'bcrypt'
@@ -7,12 +7,28 @@ import * as bcrypt from 'bcrypt'
 export enum UserRole {
   USER = 'USER',
   ADMIN = 'ADMIN',
+  SELLER = 'SELLER'
+}
+
+export enum signUpMethod {
+  FORM = 'FORM',
+  GOOGLE = 'GOOGLE'
 }
 
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @IsOptional()
+  @Column({nullable: true})
+  @IsString()
+  googleId?: string;
+
+  @Column()
+  @IsNotEmpty()
+  @IsEnum(signUpMethod)
+  method: signUpMethod;
 
   @Column({ unique: true })
   @IsNotEmpty()
@@ -34,10 +50,10 @@ export class User {
   @Length(3, 50)
   name: string;
 
-  @Column({select: false})
-  @IsNotEmpty()
+  @IsOptional()
+  @Column({select: false, nullable: true})
   @IsString()
-  password: string;
+  password?: string;
 
   @Column()
   @IsNotEmpty()
@@ -57,6 +73,8 @@ export class User {
 
   @BeforeInsert()
   hashPassword(): void {
-    this.password = bcrypt.hashSync(this.password, 10);
+    if(this.password){
+      this.password = bcrypt.hashSync(this.password, 10);
+    }
   }
 }

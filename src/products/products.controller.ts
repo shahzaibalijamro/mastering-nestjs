@@ -34,14 +34,19 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { Roles } from 'src/utils/roles.decorator';
+import { UserRole } from 'src/user/entities/user.entity';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
 
 @Controller('products')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('Products')
 @ApiBearerAuth()
 export class ProductsController {
   constructor(private productsService: ProductsService) {}
 
+  // get all products
   @Public()
   @Get()
   @ApiOperation({ summary: 'List products' })
@@ -50,6 +55,15 @@ export class ProductsController {
     return this.productsService.getProducts();
   }
 
+  // get each user's products
+  // @Get()
+  // getUserProducts(
+  //   @Req() req
+  // ): Promise<Product[]> {
+  //   return this.productsService.getUserProducts(req.user as UserWithoutPassword);
+  // }
+
+  // get a product by Id
   @Public()
   @Get(':id')
   @ApiOperation({ summary: 'Get product by ID' })
@@ -60,6 +74,8 @@ export class ProductsController {
     return this.productsService.getProductById(id);
   }
 
+  // create product
+  @Roles(UserRole.SELLER)
   @Post()
   @ApiOperation({ summary: 'Create a product with media' })
   @ApiConsumes('multipart/form-data')
@@ -106,6 +122,8 @@ export class ProductsController {
     return this.productsService.addProduct(body, files, req.user);
   }
 
+  // update product
+  @Roles(UserRole.SELLER)
   @Patch(':id')
   @ApiOperation({ summary: 'Update a product' })
   @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
@@ -120,6 +138,9 @@ export class ProductsController {
     return this.productsService.updateProduct(id, body, req.user);
   }
 
+
+  // delete a product
+  @Roles(UserRole.SELLER)
   @Delete(':id')
   @ApiOperation({ summary: 'Delete a product' })
   @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
@@ -130,6 +151,8 @@ export class ProductsController {
     return this.productsService.deleteProduct(id, req.user);
   }
 
+  // Delete multiple products
+  @Roles(UserRole.SELLER)
   @Delete()
   @ApiOperation({ summary: 'Delete multiple products' })
   @ApiBody({ type: deleteMultipleProductsDTO })
@@ -139,6 +162,8 @@ export class ProductsController {
     return this.productsService.deleteMultipleProducts(body, req.user);
   }
 
+  // Replace a product media item
+  @Roles(UserRole.SELLER)
   @Patch(':id/media')
   @ApiOperation({ summary: 'Replace a product media item' })
   @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
@@ -177,6 +202,8 @@ export class ProductsController {
     return this.productsService.updateProductMedia(id, body, files[0], req.user);
   }
 
+  // Add media to a product
+  @Roles(UserRole.SELLER)
   @Post(':id/media')
   @ApiOperation({ summary: 'Add media to a product' })
   @ApiParam({ name: 'id', description: 'Product ID (UUID)' })
@@ -214,6 +241,8 @@ export class ProductsController {
     return this.productsService.addProductMedia(id, files, req.user);
   }
 
+  // Delete media from a product
+  @Roles(UserRole.SELLER)
   @Delete(':id/media')
   @ApiOperation({ summary: 'Delete media from a product' })
   @ApiParam({ name: 'id', description: 'Product ID (UUID)' })

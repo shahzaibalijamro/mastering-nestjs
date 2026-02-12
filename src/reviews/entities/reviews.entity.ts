@@ -37,7 +37,7 @@ export class ProductReview {
   product: Product;
 
   @IsOptional()
-  @Column({ type: 'text' })
+  @Column({ type: 'text' , nullable: true})
   @ApiPropertyOptional({
     description: 'Optional review text.',
     example: 'Great quality and fast shipping.',

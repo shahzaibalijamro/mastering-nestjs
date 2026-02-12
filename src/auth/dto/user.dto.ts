@@ -56,15 +56,47 @@ export class CreateUserDTO {
       'Password must be at least 8 characters with one uppercase, one lowercase, one number, and one special character',
   })
   password: string;
+}
 
-  @ApiPropertyOptional({
-    description: 'User role (admin or standard user).',
-    enum: UserRole,
-    example: UserRole.USER,
+export class CreateGoogleUserDTO {
+  @ApiProperty({
+    description: 'Unique username (lowercased).',
+    example: 'jane_doe',
+    minLength: 3,
   })
-  @IsOptional()
-  @IsEnum(UserRole)
-  role: UserRole;
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => value.trim().toLowerCase())
+  @Length(3, 25)
+  username: string;
+
+  @ApiProperty({
+    description: 'User email address.',
+    example: 'jane@example.com',
+  })
+  @IsNotEmpty()
+  @IsString()
+  @Transform(({ value }) => value.trim())
+  @IsEmail({}, { message: 'Please provide a valid email address' })
+  email: string;
+
+  @ApiProperty({
+    description: 'Full name for display.',
+    example: 'Jane Doe',
+    minLength: 3,
+  })
+  @IsNotEmpty()
+  @IsString()
+  @Length(3, 25)
+  name: string;
+
+  @ApiProperty({
+    description: 'Google Id',
+    example: '113083211950648160355',
+    minLength: 3,
+  })
+  @IsNotEmpty()
+  googleId: string;
 }
 
 export class ValidateUserDTO {
