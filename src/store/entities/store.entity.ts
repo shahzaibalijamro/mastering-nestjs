@@ -19,6 +19,18 @@ export class Store {
     @IsString()
     description: string;
 
+    @Column({ type: 'text', nullable: true })
+    @IsString()
+    address?: string;
+
+    @Column({ length: 30, nullable: true })
+    @IsString()
+    phoneNumber?: string;
+
+    @Column({ length: 50, nullable: true })
+    @IsString()
+    idCardNumber?: string;
+
     @OneToOne(
         (type) => User, (user) => user.store, {
             eager: true,

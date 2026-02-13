@@ -12,6 +12,7 @@ import { UserModule } from './user/user.module';
 import { StoreModule } from './store/store.module';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -49,6 +50,7 @@ import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
     AuthModule,
     UserModule,
     StoreModule,
+    PaymentsModule,
   ],
   controllers: [],
   exports: [],
