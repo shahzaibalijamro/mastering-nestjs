@@ -1,53 +1,60 @@
-import { IsNotEmpty, IsString, Length } from "class-validator";
-import { User } from "src/user/entities/user.entity";
-import { Product } from "src/products/entities/product.entity";
-import { Column, CreateDateColumn, Entity, JoinColumn, JoinTable, OneToMany, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { User } from 'src/user/entities/user.entity';
+import { Product } from 'src/products/entities/product.entity';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+
+export interface Picture {
+  url: string;
+  cloudinaryPublicId: string;
+}
 
 @Entity()
 export class Store {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-    @Column({unique: true})
-    @IsNotEmpty()
-    @IsString()
-    @Length(3, 50)
-    name: string;
+  @Column({ unique: true })
+  name: string;
 
-    @Column({type: 'text'})
-    @IsNotEmpty()
-    @IsString()
-    description: string;
+  @Column({ type: 'text' })
+  description: string;
 
-    @Column({ type: 'text', nullable: true })
-    @IsString()
-    address?: string;
+  @Column({ type: 'text', nullable: true })
+  address: string;
 
-    @Column({ length: 30, nullable: true })
-    @IsString()
-    phoneNumber?: string;
+  @Column({ length: 30, nullable: true })
+  phoneNumber: string;
 
-    @Column({ length: 50, nullable: true })
-    @IsString()
-    idCardNumber?: string;
+  @Column({ length: 50, nullable: true })
+  idCardNumber: string;
 
-    @OneToOne(
-        (type) => User, (user) => user.store, {
-            eager: true,
-            onDelete: 'CASCADE'
-        }
-    )
-    @JoinColumn({name: 'ownerId'})  // ← ADD THIS
-    owner: User;
+  @Column({type: 'json', default: {
+    url: "https://res.cloudinary.com/dacvedc6z/image/upload/v1771017447/wmremove-transformed_hnlfyc.png",
+    cloudinaryPublicId : "wmremove-transformed_hnlfyc"
+  }})
+  picture: Picture;
 
-    @OneToMany(
-        type => Product, product => product.store
-    )
-    products: Product[];
-    
-      @CreateDateColumn()
-      createdAt: Date;
-    
-      @UpdateDateColumn()
-      updatedAt: Date;
+  @OneToOne((type) => User, (user) => user.store, {
+    eager: true,
+    onDelete: 'CASCADE',
+  })
+  @JoinColumn({ name: 'ownerId' }) // ← ADD THIS
+  owner: User;
+
+  @OneToMany((type) => Product, (product) => product.store)
+  products: Product[];
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 }

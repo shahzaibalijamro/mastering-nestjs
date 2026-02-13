@@ -2,17 +2,43 @@ import { Type } from 'class-transformer';
 import {
   ArrayMinSize,
   IsArray,
+  IsEnum,
   IsNotEmpty,
   IsNumber,
   IsOptional,
   IsPositive,
   IsString,
+  IsUrl,
   IsUUID,
   MinLength,
   ValidateNested,
 } from 'class-validator';
-import { Media } from '../entities/product.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { MediaType } from '../entities/product.entity';
+
+export class Media {
+  @ApiProperty({
+    description: 'Media type.',
+    enum: MediaType,
+    example: MediaType.image
+  })
+  @IsEnum(MediaType)
+  type: MediaType;
+
+  @ApiProperty({
+    description: 'Public URL for the media asset.',
+    example: 'https://res.cloudinary.com/demo/image/upload/v123/product.jpg',
+  })
+  @IsUrl()
+  url: string;
+
+  @ApiProperty({
+    description: 'Cloudinary public ID for managing the asset.',
+    example: 'products/abc123',
+  })
+  @IsString()
+  cloudinaryPublicId: string;
+}
 
 export class CreateProductDTO {
   @ApiProperty({
@@ -193,3 +219,4 @@ export class deleteMultipleProductsDTO {
   })
   ids: Array<string>
 }
+

@@ -7,7 +7,6 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
-import { IsString, MinLength } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 @Entity()
@@ -25,8 +24,6 @@ export class Tag {
     minLength: 3,
   })
   @Column({ unique: true })
-  @IsString()
-  @MinLength(3)
   name: string;
 
   @ManyToMany((type) => Product, (product) => product.tags)

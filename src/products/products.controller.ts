@@ -50,18 +50,25 @@ export class ProductsController {
   @Public()
   @Get()
   @ApiOperation({ summary: 'List products' })
-  @ApiResponse({ status: 200, description: 'List of products.', type: Product, isArray: true })
+  @ApiResponse({
+    status: 200,
+    description: 'List of products.',
+    type: Product,
+    isArray: true,
+  })
   getProducts(): Promise<Product[]> {
     return this.productsService.getProducts();
   }
 
   // get each user's products
-  // @Get()
-  // getUserProducts(
-  //   @Req() req
-  // ): Promise<Product[]> {
-  //   return this.productsService.getUserProducts(req.user as UserWithoutPassword);
-  // }
+  @Roles(UserRole.SELLER)
+  @Get('me')
+  getUserProducts(@Req() req): Promise<Product[]> {
+    return this.productsService.getProductsByUser(
+      req.user as UserWithoutPassword,
+    );
+  }
+
 
   // get a product by Id
   @Public()
@@ -73,6 +80,7 @@ export class ProductsController {
   getProductById(@Param('id', ParseUUIDPipe) id: string): Promise<Product> {
     return this.productsService.getProductById(id);
   }
+
 
   // create product
   @Roles(UserRole.SELLER)
@@ -138,7 +146,6 @@ export class ProductsController {
     return this.productsService.updateProduct(id, body, req.user);
   }
 
-
   // delete a product
   @Roles(UserRole.SELLER)
   @Delete(':id')
@@ -196,10 +203,15 @@ export class ProductsController {
     @Body() body: UpdateProductMediaDTO,
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Req() req
+    @Req() req,
   ) {
     if (files?.length === 0) throw new BadRequestException('No file recieved!');
-    return this.productsService.updateProductMedia(id, body, files[0], req.user);
+    return this.productsService.updateProductMedia(
+      id,
+      body,
+      files[0],
+      req.user,
+    );
   }
 
   // Add media to a product
@@ -234,7 +246,7 @@ export class ProductsController {
   addProductMedia(
     @Param('id', ParseUUIDPipe) id: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Req() req
+    @Req() req,
   ) {
     if (files?.length === 0)
       throw new BadRequestException('No new files recieved!');
@@ -265,10 +277,14 @@ export class ProductsController {
   deleteProductMedia(
     @Param('id', ParseUUIDPipe) id: string,
     @Body('ids') cloudinaryPublicIds: Array<string>,
-    @Req() req
+    @Req() req,
   ) {
     if (cloudinaryPublicIds?.length === 0)
       throw new BadRequestException('No cloudinaryPublicIds recieved!');
-    return this.productsService.deleteProductMedia(id, cloudinaryPublicIds, req.user);
+    return this.productsService.deleteProductMedia(
+      id,
+      cloudinaryPublicIds,
+      req.user,
+    );
   }
 }

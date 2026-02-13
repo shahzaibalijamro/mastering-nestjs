@@ -25,7 +25,7 @@ export class RolesGuard implements CanActivate {
       return true;
     } else {
         // If the user doesn't have the required role, throw a ForbiddenException
-      throw new ForbiddenException('Only sellers are authorized to create a product');
+      throw new ForbiddenException('Only sellers are authorized to perform this action!');
     }
   }
 }

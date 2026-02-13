@@ -11,20 +11,6 @@ import {
 } from 'typeorm';
 import { ProductReview } from '../../reviews/entities/reviews.entity';
 import { Tag } from '../../tags/entities/tags.entity';
-import {
-  ArrayMaxSize,
-  ArrayMinSize,
-  IsArray,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsPositive,
-  IsString,
-  IsUrl,
-  MinLength,
-  ValidateNested,
-} from 'class-validator';
-import { Type } from 'class-transformer';
 import { Store } from 'src/store/entities/store.entity';
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -33,27 +19,9 @@ export enum MediaType {
   image = 'image',
 }
 
-export class Media {
-  @ApiProperty({
-    description: 'Media type.',
-    enum: MediaType,
-    example: MediaType.image,
-  })
-  @IsEnum(MediaType)
+export interface Media {
   type: MediaType;
-
-  @ApiProperty({
-    description: 'Public URL for the media asset.',
-    example: 'https://res.cloudinary.com/demo/image/upload/v123/product.jpg',
-  })
-  @IsUrl()
   url: string;
-
-  @ApiProperty({
-    description: 'Cloudinary public ID for managing the asset.',
-    example: 'products/abc123',
-  })
-  @IsString()
   cloudinaryPublicId: string;
 }
 
@@ -72,9 +40,6 @@ export class Product {
     minLength: 3,
   })
   @Column()
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(3)
   name: string;
 
   @ApiProperty({
@@ -83,9 +48,6 @@ export class Product {
     minLength: 10,
   })
   @Column({ type: 'text' })
-  @IsNotEmpty()
-  @IsString()
-  @MinLength(10)
   description: string;
 
   @ApiProperty({
@@ -93,21 +55,12 @@ export class Product {
     example: 79.99,
   })
   @Column('decimal', { precision: 10, scale: 2 })
-  @Type((type) => Number)
-  @IsNumber()
-  @IsPositive()
   price: number;
 
   @ApiProperty({
-    description: 'Media assets attached to the product.',
-    type: () => [Media],
+    description: 'Media assets attached to the product.'
   })
   @Column('json')
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type((type) => Media)
-  @ArrayMinSize(1)
-  @ArrayMaxSize(10)
   media: Media[];
 
   @OneToMany((type) => ProductReview, (review) => review.product, {

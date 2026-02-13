@@ -18,7 +18,7 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';
 import { formatCloudinaryMediaFiles } from 'src/utils/utils';
 import { TagsService } from 'src/tags/tags.service';
-import { TokenPayload } from 'src/auth/interfaces/user.interface';
+import { TokenPayload, UserWithoutPassword } from 'src/auth/interfaces/user.interface';
 import { User } from 'src/user/entities/user.entity';
 import { StoreService } from 'src/store/store.service';
 import { Tag } from 'src/tags/entities/tags.entity';
@@ -37,6 +37,18 @@ export class ProductsService {
     return await this.productRepository.find({
       loadEagerRelations: false
     });
+  }
+
+  async getProductsByUser(
+    user: UserWithoutPassword
+  ): Promise<Product[]> {
+    console.log(user);
+    
+    const userStore = await this.storeService.getStoreByUser(user.id);
+    console.log(userStore);
+    
+    const products = await this.productRepository.findBy({store: {id: userStore.id}});
+    return products;
   }
 
   async addProduct(
