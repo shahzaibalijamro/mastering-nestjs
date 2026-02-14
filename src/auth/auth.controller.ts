@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Patch,
   Post,
   Req,
   Request,
@@ -18,6 +19,7 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { User } from 'src/user/entities/user.entity';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
+import { UpdatePasswordDTO } from 'src/user/dto/user.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -83,5 +85,22 @@ export class AuthController {
     @Request() req,
   ): Promise<{ token: string; user: UserWithoutPassword }> {
     return this.authService.getNewToken(req.user as UserWithoutPassword);
+  }
+
+  @Patch('update-password')
+  @UseGuards(JwtAuthGuard)
+  updatePassword(@Req() req, @Body() body: UpdatePasswordDTO): Promise<void> {
+    return this.authService.updatePassword(
+      body,
+      req.user as UserWithoutPassword,
+    );
+  }
+
+  @Get('reset-password-email')
+  @UseGuards(JwtAuthGuard)
+  resetPassword(@Req() req): Promise<ConfirmationMsg> {
+    return this.authService.sendResetPasswordLink(
+      req.user as UserWithoutPassword,
+    );
   }
 }

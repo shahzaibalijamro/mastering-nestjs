@@ -13,7 +13,7 @@ export enum signUpMethod {
   GOOGLE = 'GOOGLE'
 }
 
-interface ProfilePicture {
+export interface ProfilePicture {
   url: string;
   cloudinaryPublicId?: string;
 }

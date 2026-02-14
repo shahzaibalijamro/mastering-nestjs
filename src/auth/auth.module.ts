@@ -8,9 +8,11 @@ import { UserModule } from 'src/user/user.module';
 import { LocalStrategy } from './strategies/local.strategy';
 import { JWTStrategy } from './strategies/jwt.strategy';
 import { GoogleStrategy } from './strategies/google.strategy';
+import { MailModule } from 'src/mail/mail.module';
+import { ResetToken } from './entities/resetToken.entity';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), UserModule],
+  imports: [TypeOrmModule.forFeature([User, ResetToken]), UserModule, MailModule],
   controllers: [AuthController],
   providers: [AuthService, UserSubscriber, LocalStrategy, JWTStrategy, GoogleStrategy],
   exports: [AuthService]

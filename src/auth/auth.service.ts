@@ -1,5 +1,8 @@
 import {
+  ConflictException,
+  ForbiddenException,
   Injectable,
+  NotAcceptableException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -16,13 +19,19 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
 import { TokenPayload, UserWithoutPassword } from './interfaces/user.interface';
+import { UpdatePasswordDTO } from 'src/user/dto/user.dto';
+import { MailService } from 'src/mail/mail.service';
+import { randomBytes } from 'node:crypto';
+import { ResetToken } from './entities/resetToken.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
+    @InjectRepository(ResetToken) private readonly resetTokenRepository: Repository<ResetToken>,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly mailService: MailService,
   ) {}
 
   async createUser(body: CreateUserDTO): Promise<ConfirmationMsg> {
@@ -39,7 +48,9 @@ export class AuthService {
   }
 
   async createGoogleUser(body: CreateGoogleUserDTO): Promise<User> {
-    const existing = await this.userRepository.findOneBy({ googleId: body.googleId });
+    const existing = await this.userRepository.findOneBy({
+      googleId: body.googleId,
+    });
     const { profilePicture, ...remaining } = body;
     if (!existing) {
       const user = this.userRepository.create({
@@ -49,8 +60,8 @@ export class AuthService {
       });
       if (profilePicture) {
         user.profilePicture = {
-          url: profilePicture
-        }
+          url: profilePicture,
+        };
       }
       await this.userRepository.save(user);
       return user;
@@ -94,6 +105,65 @@ export class AuthService {
     return {
       token: await this.jwtService.signAsync(payload),
       user,
+    };
+  }
+
+  async updatePassword(
+    body: UpdatePasswordDTO,
+    { id }: UserWithoutPassword,
+  ): Promise<void> {
+    const { oldPassword, newPassword } = body;
+    const user = await this.userRepository.findOne({
+      where: {
+        id,
+      },
+      select: {
+        password: true,
+        method: true,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found!');
+    }
+    if (!user.password || user.method === signUpMethod.GOOGLE) {
+      throw new NotAcceptableException(
+        'Cannot change the password of a google account!',
+      );
+    }
+    const doPasswordsMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!doPasswordsMatch) {
+      throw new ForbiddenException('Invalid credentials!');
+    }
+    await this.userRepository.update(id, {
+      password: await bcrypt.hash(newPassword, 10),
+    });
+    return;
+  }
+
+  async sendResetPasswordLink(
+    user: UserWithoutPassword,
+  ): Promise<ConfirmationMsg> {
+    const { email, id, method, googleId } = user;
+    if (googleId && method === signUpMethod.GOOGLE) {
+      throw new ConflictException('This user has signed up via google!');
+    }
+    const token = randomBytes(32).toString('hex');
+    const hashedToken = await bcrypt.hash(token, 10);
+    const resetToken = this.resetTokenRepository.create({
+      expiresAt: new Date(Date.now() + 1000 * 60 * 30),
+      userId: id,
+      token: hashedToken
+    })
+    await this.resetTokenRepository.save(resetToken);
+    await this.mailService.sendEmail({
+      to: email,
+      from: 'jamroshahzaibali69@gmail.com',
+      html: '<h1>Hello world!</h1>',
+      subject: 'Testing',
+    });
+    return {
+      id,
+      message: 'Reset password email sent!',
     };
   }
 }
