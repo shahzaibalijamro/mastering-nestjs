@@ -13,6 +13,11 @@ export enum signUpMethod {
   GOOGLE = 'GOOGLE'
 }
 
+interface ProfilePicture {
+  url: string;
+  cloudinaryPublicId?: string;
+}
+
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
@@ -20,6 +25,12 @@ export class User {
 
   @Column({nullable: true})
   googleId?: string;
+
+  @Column({type: 'json', default: {
+    url: "https://res.cloudinary.com/dacvedc6z/image/upload/v1771087123/luxe_users_default_profilePicture_spanj5.png",
+    cloudinaryPublicId : "luxe_users_default_profilePicture_spanj5"
+  }})
+  profilePicture: ProfilePicture;
 
   @Column()
   method: signUpMethod;

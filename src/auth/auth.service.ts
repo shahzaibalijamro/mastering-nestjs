@@ -40,12 +40,18 @@ export class AuthService {
 
   async createGoogleUser(body: CreateGoogleUserDTO): Promise<User> {
     const existing = await this.userRepository.findOneBy({ googleId: body.googleId });
+    const { profilePicture, ...remaining } = body;
     if (!existing) {
       const user = this.userRepository.create({
-        ...body,
+        ...remaining,
         role: UserRole.USER,
         method: signUpMethod.GOOGLE,
       });
+      if (profilePicture) {
+        user.profilePicture = {
+          url: profilePicture
+        }
+      }
       await this.userRepository.save(user);
       return user;
     }

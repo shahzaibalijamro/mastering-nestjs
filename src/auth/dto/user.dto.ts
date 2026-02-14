@@ -97,6 +97,14 @@ export class CreateGoogleUserDTO {
   })
   @IsNotEmpty()
   googleId: string;
+
+  @ApiProperty({
+    description: 'Google Pfp',
+    example: 'https://lh3.googleusercontent.com/a/ACg8ocJzkzzvQTH-XOSXVLYCv0qaAaV6dKw1-D0W5uvAnb-38kYFFkNE6g=s96-c',
+    minLength: 3,
+  })
+  @IsOptional()
+  profilePicture?: string;
 }
 
 export class ValidateUserDTO {

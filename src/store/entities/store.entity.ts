@@ -11,7 +11,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-export interface Picture {
+interface Picture {
   url: string;
   cloudinaryPublicId: string;
 }

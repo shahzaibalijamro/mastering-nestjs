@@ -33,6 +33,8 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ) {
     try {
+      const profilePicture = profile._json.picture || profile?.photos?.[0]?.value;
+      
       const email =
         profile.emails?.[0]?.value || (profile as any)?._json?.email;
 
@@ -59,6 +61,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         username,
         googleId: profile.id,
         email,
+        profilePicture,
       });
 
       return done(null, user);

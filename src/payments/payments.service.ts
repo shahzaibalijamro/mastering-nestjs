@@ -83,12 +83,7 @@ export class PaymentsService {
       );
     }
 
-    const dbUser = await this.userService.updateUser(
-      {
-        role: UserRole.SELLER,
-      },
-      user,
-    );
+    const dbUser = await this.userService.updateUserRole(UserRole.SELLER, user);
     // have to remove the store repository from here, and use only storeService
 
     await this.storeService.createStore({

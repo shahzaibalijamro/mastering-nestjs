@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
 import { ConfirmationMsg } from 'src/utils/confirmation.interface';
 import { UpdateUserDTO } from './dto/user.dto';
@@ -50,12 +50,9 @@ export class UserService {
     userObj: UserWithoutPassword,
   ): Promise<UserWithoutPassword> {
     const user = await this.getUserById(userObj.id);
-    const { name, role, username } = body;
+    const { name, username } = body;
     if (name) {
       user.name = name;
-    }
-    if (role) {
-      user.role = role;
     }
     if (username) {
       const exist = await this.userRepository.findOneBy({ username });
@@ -65,6 +62,16 @@ export class UserService {
       user.username = username;
     }
     await this.userRepository.save(user);
-    return user
+    return user;
+  }
+
+  async updateUserRole(
+    role: UserRole,
+    userObj: UserWithoutPassword,
+  ): Promise<UserWithoutPassword> {
+    const user = await this.getUserById(userObj.id);
+    user.role = role;
+    await this.userRepository.save(user);
+    return user;
   }
 }

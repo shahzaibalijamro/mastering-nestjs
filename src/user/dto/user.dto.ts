@@ -21,9 +21,4 @@ export class UpdateUserDTO {
   @IsString()
   @Length(3, 50)
   name?: string;
-
-  @IsOptional()
-  @IsNotEmpty()
-  @IsEnum(UserRole)
-  role?: UserRole;
 }
