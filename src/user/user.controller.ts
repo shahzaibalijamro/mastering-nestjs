@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Patch,
   Req,
@@ -47,4 +48,11 @@ export class UserController {
       profilePicture,
     );
   }
+
+  // @Delete()
+  // deleteUser(
+  //   @Req() req
+  // ):Promise<void> {
+  //   return this.userService.deleteUser(req.user as UserWithoutPassword);
+  // }
 }

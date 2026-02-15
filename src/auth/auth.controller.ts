@@ -12,14 +12,13 @@ import {
 import { AuthService } from './auth.service';
 import { CreateUserDTO, ValidateUserDTO } from './dto/user.dto';
 import { ConfirmationMsg, Token } from 'src/utils/confirmation.interface';
-import { AuthGuard } from '@nestjs/passport';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserWithoutPassword } from './interfaces/user.interface';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
-import { User } from 'src/user/entities/user.entity';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { UpdatePasswordDTO } from 'src/user/dto/user.dto';
+import { ResetPasswordWithTokenDTO } from './dto/reset-password.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -100,6 +99,34 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   resetPassword(@Req() req): Promise<ConfirmationMsg> {
     return this.authService.sendResetPasswordLink(
+      req.user as UserWithoutPassword,
+    );
+  }
+
+  @Patch('reset-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary:
+      'Reset user password by validating bearer token and reset token from email',
+  })
+  @ApiBody({ type: ResetPasswordWithTokenDTO })
+  @ApiResponse({
+    status: 200,
+    description: 'Password reset successful.',
+    schema: {
+      type: 'object',
+      properties: {
+        id: { type: 'string', example: '0f0d50d8-6d14-4e2c-97ad-0ed4e2ea2f2c' },
+        message: { type: 'string', example: 'Password reset successful!' },
+      },
+    },
+  })
+  resetPasswordWithToken(
+    @Req() req,
+    @Body() body: ResetPasswordWithTokenDTO,
+  ): Promise<ConfirmationMsg> {
+    return this.authService.resetPasswordWithToken(
+      body,
       req.user as UserWithoutPassword,
     );
   }
