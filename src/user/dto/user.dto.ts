@@ -1,13 +1,11 @@
 import { Transform } from 'class-transformer';
 import {
-  IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   Length,
   Matches,
 } from 'class-validator';
-import { UserRole } from '../entities/user.entity';
 
 export class UpdateUserDTO {
   @IsOptional()
@@ -27,10 +25,6 @@ export class UpdateUserDTO {
 export class UpdatePasswordDTO {
   @IsNotEmpty()
   @IsString()
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_#^()\-+=]).{8,}$/, {
-    message:
-      'Password must be at least 8 characters with one uppercase, one lowercase, one number, and one special character',
-  })
   oldPassword: string;
 
   @IsNotEmpty()

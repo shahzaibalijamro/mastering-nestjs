@@ -4,9 +4,10 @@ import { UserService } from './user.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { StoreModule } from 'src/store/store.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([User]), CloudinaryModule],
+  imports: [TypeOrmModule.forFeature([User]), CloudinaryModule, StoreModule],
   controllers: [UserController],
   providers: [UserService],
   exports: [UserService]

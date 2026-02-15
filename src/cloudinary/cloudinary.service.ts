@@ -1,5 +1,5 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { UploadApiErrorResponse, UploadApiResponse } from 'cloudinary';
+import { UploadApiResponse } from 'cloudinary';
 import { v2 as cloudinary } from 'cloudinary';
 
 @Injectable()

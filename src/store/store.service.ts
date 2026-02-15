@@ -7,12 +7,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Store } from './entities/store.entity';
 import { Repository } from 'typeorm';
-import { User } from 'src/user/entities/user.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { ConfirmationMsg } from 'src/utils/confirmation.interface';
 import { CreateStoreDTO, UpdateStoreDTO } from './dto/store.dto';
 import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { ProductsService } from 'src/products/products.service';
 
 @Injectable()
 export class StoreService {
@@ -20,6 +20,7 @@ export class StoreService {
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly productsService: ProductsService
   ) {}
 
   async getStoreByUser(userId: string): Promise<Store> {
@@ -34,7 +35,7 @@ export class StoreService {
     return store;
   }
 
-  async confirmProductInStore(user: User, product: Product): Promise<Store> {
+  async confirmProductInStore(user: UserWithoutPassword, product: Product): Promise<Store> {
     const store = await this.storeRepository.findOne({
       where: {
         owner: { id: user.id },
@@ -103,5 +104,26 @@ export class StoreService {
     }
     await this.storeRepository.save(store);
     return store;
+  }
+
+
+  async deleteStore(
+    user: UserWithoutPassword
+  ): Promise<ConfirmationMsg> {
+    const store: Store = await this.getStoreByUser(user.id);
+    const storeId = store.id;
+    const storeProducts = await this.productsService.getProductsByUser(user);
+    if (store.picture && store.picture.cloudinaryPublicId !== "wmremove-transformed_hnlfyc") {
+      await this.cloudinaryService.deleteFile(store.picture.cloudinaryPublicId);
+    }
+    if (storeProducts.length > 0) {
+      const productIds = storeProducts.map((product) => product.id);
+      await this.productsService.deleteMultipleProducts({ids: productIds}, user);
+    }
+    await this.storeRepository.remove(store);
+    return {
+      id: storeId,
+      message: "Store deleted!"
+    }
   }
 }

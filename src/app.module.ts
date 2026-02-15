@@ -1,6 +1,6 @@
-import { Module, Scope } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ProductsModule } from './products/products.module';
-import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseTransformInterceptor } from './interceptors/response-transform.interceptor';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -11,7 +11,6 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { StoreModule } from './store/store.module';
 import { JwtModule } from '@nestjs/jwt';
-import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { PaymentsModule } from './payments/payments.module';
 import { MailModule } from './mail/mail.module';
 

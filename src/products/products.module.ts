@@ -6,17 +6,18 @@ import { Product } from './entities/product.entity';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { TagsModule } from 'src/tags/tags.module';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { StoreModule } from 'src/store/store.module';
+import { ReviewsModule } from 'src/reviews/reviews.module';
+import { Store } from 'src/store/entities/store.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product]),
+    TypeOrmModule.forFeature([Product, Store]),
     CloudinaryModule,
     TagsModule,
-    StoreModule
+    ReviewsModule,
   ],
   controllers: [ProductsController],
   providers: [ProductsService, CloudinaryService],
-  exports: [ProductsService]
+  exports: [ProductsService],
 })
 export class ProductsModule {}

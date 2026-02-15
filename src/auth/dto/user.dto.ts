@@ -8,7 +8,6 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
-import { UserRole } from '../../user/entities/user.entity';
 import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 

@@ -2,6 +2,8 @@ import {
   Body,
   Controller,
   Get,
+  Param,
+  ParseUUIDPipe,
   Patch,
   Post,
   Req,
@@ -95,16 +97,12 @@ export class AuthController {
     );
   }
 
-  @Get('reset-password-email')
-  @UseGuards(JwtAuthGuard)
-  resetPassword(@Req() req): Promise<ConfirmationMsg> {
-    return this.authService.sendResetPasswordLink(
-      req.user as UserWithoutPassword,
-    );
+  @Post('reset-password-email')
+  resetPassword(@Body('email') email: string): Promise<ConfirmationMsg> {
+    return this.authService.sendResetPasswordLink(email);
   }
 
   @Patch('reset-password')
-  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary:
       'Reset user password by validating bearer token and reset token from email',
@@ -122,12 +120,8 @@ export class AuthController {
     },
   })
   resetPasswordWithToken(
-    @Req() req,
     @Body() body: ResetPasswordWithTokenDTO,
   ): Promise<ConfirmationMsg> {
-    return this.authService.resetPasswordWithToken(
-      body,
-      req.user as UserWithoutPassword,
-    );
+    return this.authService.resetPasswordWithToken(body);
   }
 }

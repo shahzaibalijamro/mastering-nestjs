@@ -18,10 +18,14 @@ import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';
 import { formatCloudinaryMediaFiles } from 'src/utils/utils';
 import { TagsService } from 'src/tags/tags.service';
-import { TokenPayload, UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import {
+  UserWithoutPassword,
+} from 'src/auth/interfaces/user.interface';
 import { User } from 'src/user/entities/user.entity';
-import { StoreService } from 'src/store/store.service';
 import { Tag } from 'src/tags/entities/tags.entity';
+import { ReviewsService } from 'src/reviews/reviews.service';
+import { ProductReview } from 'src/reviews/entities/reviews.entity';
+import { Store } from 'src/store/entities/store.entity';
 
 @Injectable()
 export class ProductsService {
@@ -30,24 +34,53 @@ export class ProductsService {
     private readonly productRepository: Repository<Product>,
     private readonly cloudinaryService: CloudinaryService,
     private readonly tagsService: TagsService,
-    private readonly storeService: StoreService,
+    private readonly reviewsService: ReviewsService,
+    @InjectRepository(Store)
+    private readonly storeRepository: Repository<Store>,
   ) {}
+
+  private async getStoreByUser(userId: string): Promise<Store> {
+    const store = await this.storeRepository.findOne({
+      where: {
+        owner: { id: userId },
+      },
+    });
+    if (!store) {
+      throw new NotFoundException('Store does not exist!');
+    }
+    return store;
+  }
+
+  private async confirmProductInStore(user: UserWithoutPassword, product: Product): Promise<Store> {
+    const store = await this.storeRepository.findOne({
+      where: {
+        owner: { id: user.id },
+      },
+    });
+    if (!store) {
+      throw new NotFoundException('Store does not exist!');
+    }
+    if (product.store.id !== store.id) {
+      throw new UnauthorizedException('This user does not own the product!');
+    }
+    return store;
+  }
 
   async getProducts(): Promise<Product[]> {
     return await this.productRepository.find({
-      loadEagerRelations: false
+      loadEagerRelations: false,
     });
   }
 
-  async getProductsByUser(
-    user: UserWithoutPassword
-  ): Promise<Product[]> {
+  async getProductsByUser(user: UserWithoutPassword): Promise<Product[]> {
     console.log(user);
-    
-    const userStore = await this.storeService.getStoreByUser(user.id);
+
+    const userStore = await this.getStoreByUser(user.id);
     console.log(userStore);
-    
-    const products = await this.productRepository.findBy({store: {id: userStore.id}});
+
+    const products = await this.productRepository.findBy({
+      store: { id: userStore.id },
+    });
     return products;
   }
 
@@ -56,7 +89,6 @@ export class ProductsService {
     files: Array<Express.Multer.File>,
     user: User,
   ): Promise<ConfirmationMsg> {
-
     //destructure
     const { name, description, price, tagIds } = body;
 
@@ -69,7 +101,7 @@ export class ProductsService {
     }
 
     // fetch user's store
-    const store = await this.storeService.getStoreByUser(user.id);
+    const store = await this.getStoreByUser(user.id);
 
     // upload media and format
     const UploadedFiles: UploadApiResponse[] =
@@ -119,7 +151,6 @@ export class ProductsService {
     body: UpdateProductDTO,
     user: User,
   ): Promise<ConfirmationMsg> {
-
     // destructure
     const { name, description, price, media } = body;
 
@@ -127,7 +158,7 @@ export class ProductsService {
     const product = await this.getProductById(id);
 
     // check if user owns the product
-    await this.storeService.confirmProductInStore(user, product);
+    await this.confirmProductInStore(user, product);
 
     //update
     product.name = name || product.name;
@@ -140,13 +171,15 @@ export class ProductsService {
     };
   }
 
-  async deleteProduct(id: string, user: User): Promise<ConfirmationMsg> {
-
+  async deleteProduct(
+    id: string,
+    user: UserWithoutPassword,
+  ): Promise<ConfirmationMsg> {
     // confirm product exists
     const product = await this.getProductById(id);
 
     // confirm user owns the product
-    await this.storeService.confirmProductInStore(user, product);
+    await this.confirmProductInStore(user, product);
 
     // store id to return it later
     const productId = product.id;
@@ -157,6 +190,14 @@ export class ProductsService {
         this.cloudinaryService.deleteFile(item.cloudinaryPublicId),
       ),
     );
+
+    // delete product reviews as well
+    const productReviews: ProductReview[] =
+      await this.reviewsService.getProductReviews(product.id);
+    for (const review of productReviews) {
+      await this.reviewsService.removeReview(review.id);
+    }
+
     await this.productRepository.remove(product);
 
     // return id
@@ -166,7 +207,10 @@ export class ProductsService {
     };
   }
 
-  async deleteMultipleProducts(body: deleteMultipleProductsDTO, user: User) {
+  async deleteMultipleProducts(
+    body: deleteMultipleProductsDTO,
+    user: UserWithoutPassword,
+  ) {
     const { ids } = body;
     await Promise.all(ids.map((id) => this.deleteProduct(id, user)));
     return {
@@ -180,7 +224,6 @@ export class ProductsService {
     file: Express.Multer.File,
     user: User,
   ): Promise<ConfirmationMsg> {
-
     // get media id from frontend
     const { cloudinaryPublicId } = body;
 
@@ -195,7 +238,7 @@ export class ProductsService {
     const product = await this.getProductById(id);
 
     // confirm user owns the product
-    await this.storeService.confirmProductInStore(user, product);
+    await this.confirmProductInStore(user, product);
 
     // check if media exists in the product
     const index = product.media.findIndex(
@@ -227,7 +270,6 @@ export class ProductsService {
     files: Array<Express.Multer.File>,
     user: User,
   ): Promise<ConfirmationMsg> {
-
     // fetch product
     const product = await this.getProductById(id);
 
@@ -239,7 +281,7 @@ export class ProductsService {
     }
 
     // confirm user owns the product
-    await this.storeService.confirmProductInStore(user, product);
+    await this.confirmProductInStore(user, product);
 
     // upload
     const UploadedFiles: UploadApiResponse[] =
@@ -262,14 +304,14 @@ export class ProductsService {
   ): Promise<ConfirmationMsg> {
     // fetch product
     const product = await this.getProductById(id);
-    
+
     // return if user has one media
     if (product.media.length < 2) {
       throw new BadRequestException('Product must at least have one media!');
     }
 
     // confirm user owns the product
-    await this.storeService.confirmProductInStore(user, product);
+    await this.confirmProductInStore(user, product);
 
     // delete
     await Promise.all(

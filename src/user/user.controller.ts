@@ -10,13 +10,12 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import type {
-  TokenPayload,
   UserWithoutPassword,
 } from 'src/auth/interfaces/user.interface';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UpdatePasswordDTO, UpdateUserDTO } from './dto/user.dto';
+import { UpdateUserDTO } from './dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @UseGuards(JwtAuthGuard)
@@ -49,10 +48,10 @@ export class UserController {
     );
   }
 
-  // @Delete()
-  // deleteUser(
-  //   @Req() req
-  // ):Promise<void> {
-  //   return this.userService.deleteUser(req.user as UserWithoutPassword);
-  // }
+  @Delete()
+  deleteUser(
+    @Req() req
+  ):Promise<void> {
+    return this.userService.deleteUser(req.user as UserWithoutPassword);
+  }
 }

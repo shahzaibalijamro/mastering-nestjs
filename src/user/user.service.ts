@@ -1,29 +1,27 @@
 import {
   ConflictException,
-  ForbiddenException,
   Injectable,
-  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { signUpMethod, User, UserRole } from './entities/user.entity';
+import { User, UserRole } from './entities/user.entity';
 import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
-import { UpdatePasswordDTO, UpdateUserDTO } from './dto/user.dto';
+import { UpdateUserDTO } from './dto/user.dto';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import * as bcrypt from 'bcrypt';
+import { StoreService } from 'src/store/store.service';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly storeService: StoreService,
   ) {}
 
   async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
     const user = await this.userRepository.findOne({
-      where: [{ username: usernameOrEmail }, { email: usernameOrEmail }],
+      where: [{ email: usernameOrEmail }, { username: usernameOrEmail }],
       select: {
         password: true,
         createdAt: true,
@@ -90,5 +88,19 @@ export class UserService {
     user.role = role;
     await this.userRepository.save(user);
     return user;
+  }
+
+
+  async deleteUser(user: UserWithoutPassword) {
+    const {profilePicture} = user;
+    if (user.role === UserRole.SELLER && user.store) {
+      
+    }
+    if (profilePicture && profilePicture.cloudinaryPublicId && profilePicture.cloudinaryPublicId !== "luxe_users_default_profilePicture_spanj5") {
+      await this.cloudinaryService.deleteFile(profilePicture.cloudinaryPublicId)
+    }
+    await this.storeService.deleteStore(user);
+    await this.userRepository.delete(user.id);
+    return;
   }
 }

@@ -8,7 +8,6 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { InjectDataSource } from '@nestjs/typeorm';
 import { Store } from 'src/store/entities/store.entity';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
 
 @EventSubscriber()
 export class UserSubscriber implements EntitySubscriberInterface<User> {

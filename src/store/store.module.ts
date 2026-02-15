@@ -4,9 +4,10 @@ import { StoreService } from './store.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Store } from './entities/store.entity';
 import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
+import { ProductsModule } from 'src/products/products.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Store]), CloudinaryModule],
+  imports: [TypeOrmModule.forFeature([Store]), CloudinaryModule, ProductsModule],
   controllers: [StoreController],
   providers: [StoreService],
   exports: [StoreService],

@@ -2,6 +2,7 @@ import {
   ConflictException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotAcceptableException,
   NotFoundException,
   UnauthorizedException,
@@ -35,20 +36,29 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
     private readonly mailService: MailService,
-    private readonly configService: ConfigService
+    private readonly configService: ConfigService,
   ) {}
 
   async createUser(body: CreateUserDTO): Promise<ConfirmationMsg> {
-    const user = this.userRepository.create({
-      ...body,
-      role: UserRole.USER,
-      method: signUpMethod.FORM,
-    });
-    await this.userRepository.save(user);
-    return {
-      id: user.id,
-      message: 'User created!',
-    };
+    try {
+      const user = this.userRepository.create({
+        ...body,
+        role: UserRole.USER,
+        method: signUpMethod.FORM,
+      });
+      await this.userRepository.save(user);
+      return {
+        id: user.id,
+        message: 'User created!',
+      };
+    } catch (error) {
+      if (error?.code && error.code === '23505') {
+        throw new ConflictException(
+          'An account with this username or email already exists!',
+        );
+      }
+      throw new InternalServerErrorException();
+    }
   }
 
   async createGoogleUser(body: CreateGoogleUserDTO): Promise<User> {
@@ -144,10 +154,13 @@ export class AuthService {
     return;
   }
 
-  async sendResetPasswordLink(
-    user: UserWithoutPassword,
-  ): Promise<ConfirmationMsg> {
-    const { email, id, method, googleId, name } = user;
+  async sendResetPasswordLink(email: string): Promise<ConfirmationMsg> {
+    console.log(email);
+    
+    const user = await this.userService.getUserByUsernameOrEmail(email);
+    console.log(user);
+    
+    const { id, method, googleId, name } = user;
     if (googleId && method === signUpMethod.GOOGLE) {
       throw new ConflictException('This user has signed up via google!');
     }
@@ -166,11 +179,13 @@ export class AuthService {
       token: hashedToken,
     });
     await this.resetTokenRepository.save(resetToken);
-    const resetLink = this.buildResetPasswordLink(token);
+    const resetLink = this.buildResetPasswordLink(token, user.email);
 
     await this.mailService.sendEmail({
       to: email,
-      from: this.configService.get<string>('EMAIL_USER') ?? 'jamroshahzaibali69@gmail.com',
+      from:
+        this.configService.get<string>('EMAIL_USER') ??
+        'jamroshahzaibali69@gmail.com',
       html: this.buildResetPasswordEmailTemplate({
         userName: name,
         userEmail: email,
@@ -186,78 +201,52 @@ export class AuthService {
 
   async resetPasswordWithToken(
     body: ResetPasswordWithTokenDTO,
-    { id }: UserWithoutPassword,
   ): Promise<ConfirmationMsg> {
-    const { token, newPassword } = body;
-    const user = await this.userRepository.findOne({
-      where: { id },
-      select: {
-        id: true,
-        method: true,
-        googleId: true,
-      },
-    });
+    const { token, newPassword, email } = body;
+    const user = await this.userService.getUserByUsernameOrEmail(email);
 
-    if (!user) {
-      throw new NotFoundException('User not found!');
-    }
+    const activeToken: ResetToken | null =
+      await this.resetTokenRepository.findOne({
+        where: {
+          userId: user.id,
+          isUsed: false,
+          expiresAt: MoreThan(new Date()),
+        },
+        order: {
+          expiresAt: 'DESC',
+        },
+      });
 
-    if (user.googleId && user.method === signUpMethod.GOOGLE) {
-      throw new NotAcceptableException(
-        'Cannot reset the password of a google account!',
-      );
-    }
-
-    const activeTokens = await this.resetTokenRepository.find({
-      where: {
-        userId: id,
-        isUsed: false,
-        expiresAt: MoreThan(new Date()),
-      },
-      order: {
-        expiresAt: 'DESC',
-      },
-    });
-
-    if (!activeTokens.length) {
+    if (!activeToken) {
       throw new UnauthorizedException('Reset token is invalid or expired!');
     }
 
-    let isTokenValid = false;
-    for (const resetToken of activeTokens) {
-      const isMatch = await bcrypt.compare(token, resetToken.token);
-      if (isMatch) {
-        isTokenValid = true;
-        break;
-      }
-    }
-
-    if (!isTokenValid) {
+    const isMatch = await bcrypt.compare(token, activeToken.token);
+    if (!isMatch) {
       throw new UnauthorizedException('Reset token is invalid or expired!');
     }
-
-    await this.userRepository.update(id, {
-      password: await bcrypt.hash(newPassword, 10),
-    });
-
     await this.resetTokenRepository.update(
-      { userId: id, isUsed: false },
+      { userId: user.id, isUsed: false },
       { isUsed: true },
     );
 
+    await this.userRepository.update(user.id, {
+      password: await bcrypt.hash(newPassword, 10),
+    });
+
     return {
-      id,
+      id: user.id,
       message: 'Password reset successful!',
     };
   }
 
-  private buildResetPasswordLink(token: string): string {
+  private buildResetPasswordLink(token: string, email: string): string {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
     if (!frontendUrl) {
-      throw new Error("Frontend url not found!")
+      throw new Error('Frontend url not found!');
     }
     const resetPath = '/auth/reset-password';
-    return `${frontendUrl}${resetPath}?token=${encodeURIComponent(token)}`;
+    return `${frontendUrl}${resetPath}?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
   }
 
   private buildResetPasswordEmailTemplate({

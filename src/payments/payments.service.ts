@@ -1,7 +1,6 @@
 import {
   BadRequestException,
   Injectable,
-  NotFoundException,
 } from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
@@ -10,8 +9,7 @@ import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User, UserRole } from 'src/user/entities/user.entity';
-import { Store } from 'src/store/entities/store.entity';
+import { UserRole } from 'src/user/entities/user.entity';
 import { Payment } from './entities/payment.entity';
 import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
 import { UserService } from 'src/user/user.service';

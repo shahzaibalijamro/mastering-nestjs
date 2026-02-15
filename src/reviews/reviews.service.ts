@@ -7,7 +7,6 @@ import { AddReviewDTO } from './dto/reviews.dto';
 import { UploadApiResponse } from 'cloudinary';
 import { formatCloudinaryMediaFiles } from 'src/utils/utils';
 import { Product } from 'src/products/entities/product.entity';
-import { ProductsService } from 'src/products/products.service';
 import { ConfirmationMsg } from 'src/utils/confirmation.interface';
 
 @Injectable()
@@ -16,12 +15,25 @@ export class ReviewsService {
     @InjectRepository(ProductReview)
     private readonly reviewRepository: Repository<ProductReview>,
     private readonly cloudinaryService: CloudinaryService,
-    private readonly productsService: ProductsService
+    @InjectRepository(Product)
+    private readonly productRepository: Repository<Product>
   ) {}
+
+  private async getProductById(id: string): Promise<Product> {
+    const product = await this.productRepository.findOne({
+      where: {
+        id,
+      },
+    });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    return product;
+  }
 
   async createReview(productId: string, body: AddReviewDTO, files: Array<Express.Multer.File>): Promise<ConfirmationMsg> {
     const { stars, text } = body;
-    const product: Product = await this.productsService.getProductById(productId);
+    const product: Product = await this.getProductById(productId);
     const review = this.reviewRepository.create({
         text,
         stars,
@@ -62,5 +74,15 @@ export class ReviewsService {
         id: reviewId,
         message: 'Review deleted!'
     }
+  }
+
+  async getProductReviews(productId: string): Promise<ProductReview[]> {
+    const product = await this.getProductById(productId);
+    const productReviews = await this.reviewRepository.findBy({
+      product: {
+        id: productId
+      }
+    })
+    return productReviews;
   }
 }
