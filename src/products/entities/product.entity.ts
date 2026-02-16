@@ -47,7 +47,7 @@ export class Product {
     example: 'Lightweight everyday sneakers with breathable canvas.',
     minLength: 10,
   })
-  @Column({ type: 'text' })
+  @Column({ type: 'text', select: false })
   description: string;
 
   @ApiProperty({
@@ -71,6 +71,7 @@ export class Product {
 
   @ManyToMany((type) => Tag, (tag) => tag.products, {
     eager: true,
+    onDelete: 'CASCADE'
   })
   @JoinTable({
     name: 'product_tags',
@@ -86,7 +87,6 @@ export class Product {
   tags: Tag[];
 
   @ManyToOne((type) => Store, (store) => store.products, {
-    eager: true,
     onDelete: 'CASCADE'
   })
   store: Store;

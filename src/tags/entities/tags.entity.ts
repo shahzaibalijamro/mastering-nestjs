@@ -3,11 +3,13 @@ import {
   CreateDateColumn,
   Entity,
   ManyToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import { Product } from '../../products/entities/product.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class Tag {
@@ -17,6 +19,9 @@ export class Tag {
   })
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @ManyToMany(type => User, (user) => user.addedTags)
+  user: User;
 
   @ApiProperty({
     description: 'Tag name.',

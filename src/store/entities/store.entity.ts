@@ -27,13 +27,13 @@ export class Store {
   @Column({ type: 'text' })
   description: string;
 
-  @Column({ type: 'text', nullable: true })
+  @Column({ type: 'text', nullable: true, select: false })
   address: string;
 
-  @Column({ length: 30, nullable: true })
+  @Column({ length: 30, nullable: true, select: false })
   phoneNumber: string;
 
-  @Column({ length: 50, nullable: true })
+  @Column({ length: 50, nullable: true, select: false })
   idCardNumber: string;
 
   @Column({type: 'json', default: {

@@ -72,14 +72,30 @@ export class ProductsService {
     });
   }
 
+  async getProductsByTag(tag: Tag): Promise<Product[]> {
+    const products = await this.productRepository.find({
+      where: {
+        tags: {
+          id: tag.id
+        }
+      }
+    })
+    return products;
+  }
+
   async getProductsByUser(user: UserWithoutPassword): Promise<Product[]> {
     console.log(user);
 
     const userStore = await this.getStoreByUser(user.id);
     console.log(userStore);
 
-    const products = await this.productRepository.findBy({
-      store: { id: userStore.id },
+    const products = await this.productRepository.find({
+      where: {
+        store: { id: userStore.id },
+      },
+      relations: {
+        store: false,
+      }
     });
     return products;
   }
@@ -139,6 +155,24 @@ export class ProductsService {
       where: {
         id,
       },
+      select: {
+        createdAt: true,
+        description: true,
+        id: true,
+        media: true,
+        name: true,
+        price: true,
+        reviews: true,
+        store: true,
+        tags: true,
+        updatedAt: true,
+      },
+      relations: {
+        reviews: {
+          user: true
+        },
+        store: true,
+      }
     });
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -195,7 +229,7 @@ export class ProductsService {
     const productReviews: ProductReview[] =
       await this.reviewsService.getProductReviews(product.id);
     for (const review of productReviews) {
-      await this.reviewsService.removeReview(review.id);
+      await this.reviewsService.removeReview(review.id, user);
     }
 
     await this.productRepository.remove(product);

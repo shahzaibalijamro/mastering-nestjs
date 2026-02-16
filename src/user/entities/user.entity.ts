@@ -4,11 +4,15 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  ManyToMany,
+  OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { ProductReview } from 'src/reviews/entities/reviews.entity';
+import { Tag } from 'src/tags/entities/tags.entity';
 
 export enum UserRole {
   USER = 'USER',
@@ -31,7 +35,7 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, select: false })
   googleId?: string;
 
   @Column({
@@ -43,7 +47,7 @@ export class User {
   })
   profilePicture: ProfilePicture;
 
-  @Column()
+  @Column({select: false})
   method: signUpMethod;
 
   @Column({ unique: true })
@@ -58,20 +62,27 @@ export class User {
   @Column({ select: false, nullable: true })
   password?: string;
 
-  @Column()
+  @Column({select: false})
   role: UserRole;
 
-  @Column({ default: 1 })
+  @Column({ default: 1 , select: false})
   tokenVersion: number;
 
   @OneToOne((type) => Store, (store) => store.owner)
   store: Store;
 
+  @OneToMany(type => ProductReview, (review) => review.user)
+  reviews: ProductReview[];
+
+  @ManyToMany(type => Tag, (tag) => tag.user)
+  addedTags: Tag[];
+  
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+
 
   @BeforeInsert()
   hashPassword(): void {

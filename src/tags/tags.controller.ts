@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, ParseUUIDPipe, Post, Req, UseGuards } from '@nestjs/common';
 import { TagsService } from './tags.service';
 import { addTagDTO } from './dto/tags.dto';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
@@ -8,6 +8,7 @@ import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Roles } from 'src/utils/roles.decorator';
 import {  UserRole } from 'src/user/entities/user.entity';
 import { Public } from 'src/utils/public.decorator';
+import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('tags')
@@ -21,9 +22,10 @@ export class TagsController {
     @ApiBody({ type: addTagDTO })
     @ApiResponse({ status: 201, description: 'Tag created.' })
     addTag(
-        @Body() body: addTagDTO
+        @Body() body: addTagDTO,
+        @Req() req,
     ) {
-        return this.tagsService.createTag(body);
+        return this.tagsService.createTag(body, req.user as UserWithoutPassword);
     }
 
     @Public()
@@ -53,8 +55,9 @@ export class TagsController {
     @ApiResponse({ status: 200, description: 'Tag deleted.' })
     @ApiResponse({ status: 404, description: 'Tag not found.' })
     deleteTask(
-        @Param('id', ParseUUIDPipe) id: string
+        @Param('id', ParseUUIDPipe) id: string,
+        @Req() req,
     ) {
-        return this.tagsService.deleteTag(id);
+        return this.tagsService.deleteTag(id, req.user as UserWithoutPassword);
     }
 }

@@ -19,13 +19,21 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
-import { PasswordResetCalledFrom, TokenPayload, UserWithoutPassword } from './interfaces/user.interface';
+import {
+  PasswordResetCalledFrom,
+  TokenPayload,
+  UserWithoutPassword,
+} from './interfaces/user.interface';
 import { UpdatePasswordDTO } from 'src/user/dto/user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { randomBytes } from 'node:crypto';
 import { ResetToken } from './entities/resetToken.entity';
-import { ResetPasswordEmailDTO, ResetPasswordWithTokenDTO } from './dto/reset-password.dto';
+import {
+  ResetPasswordEmailDTO,
+  ResetPasswordWithTokenDTO,
+} from './dto/reset-password.dto';
 import { ConfigService } from '@nestjs/config';
+import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 
 @Injectable()
 export class AuthService {
@@ -37,6 +45,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly mailService: MailService,
     private readonly configService: ConfigService,
+    private readonly cloudinaryService: CloudinaryService,
   ) {}
 
   async createUser(body: CreateUserDTO): Promise<ConfirmationMsg> {
@@ -73,8 +82,11 @@ export class AuthService {
         method: signUpMethod.GOOGLE,
       });
       if (profilePicture) {
+        const result =
+          await this.cloudinaryService.uploadFileUsingGoogleUrl(profilePicture);
         user.profilePicture = {
-          url: profilePicture,
+          url: result.url,
+          cloudinaryPublicId: result.public_id,
         };
       }
       await this.userRepository.save(user);
@@ -112,15 +124,16 @@ export class AuthService {
 
   async getNewToken(
     user: UserWithoutPassword,
-  ): Promise<{ token: string; user: UserWithoutPassword }> {
+  ): Promise<{ token: string; user }> {
     const payload: TokenPayload = {
       sub: user.id,
       username: user.username,
       tokenVersion: user.tokenVersion,
     };
+    const { tokenVersion, ...userFiltered } = user;
     return {
       token: await this.jwtService.signAsync(payload),
-      user,
+      user: userFiltered,
     };
   }
 
@@ -163,7 +176,9 @@ export class AuthService {
     return;
   }
 
-  async sendResetPasswordLink(body: ResetPasswordEmailDTO): Promise<ConfirmationMsg> {
+  async sendResetPasswordLink(
+    body: ResetPasswordEmailDTO,
+  ): Promise<ConfirmationMsg> {
     const { email, from } = body;
 
     const user = await this.userService.getUserByUsernameOrEmail(email);
@@ -257,7 +272,11 @@ export class AuthService {
     };
   }
 
-  private buildResetPasswordLink(token: string, email: string, from: PasswordResetCalledFrom): string {
+  private buildResetPasswordLink(
+    token: string,
+    email: string,
+    from: PasswordResetCalledFrom,
+  ): string {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
     if (!frontendUrl) {
       throw new Error('Frontend url not found!');

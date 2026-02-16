@@ -28,6 +28,18 @@ export class CloudinaryService {
     });
   }
 
+  async uploadFileUsingGoogleUrl(url: string): Promise<UploadApiResponse> {
+    try {
+      const result = await cloudinary.uploader.upload(url, {
+        resource_type: 'image',
+        folder: 'luxe_google_pfps'
+      })
+      return result;
+    } catch (error) {
+      throw new InternalServerErrorException('Cloudinary upload failed');
+    }
+  }
+
   async uploadFiles(
     files: Express.Multer.File[],
   ): Promise<UploadApiResponse[]> {

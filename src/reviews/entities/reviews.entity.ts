@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { Media, Product } from '../../products/entities/product.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { User } from 'src/user/entities/user.entity';
 
 @Entity()
 export class ProductReview {
@@ -22,6 +23,11 @@ export class ProductReview {
     onDelete: 'CASCADE',
   })
   product: Product;
+
+  @ManyToOne(() => User, (user) => user.reviews, {
+    onDelete: 'CASCADE',
+  })
+  user: User;
 
   @Column({ type: 'text' , nullable: true})
   @ApiPropertyOptional({

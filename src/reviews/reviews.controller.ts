@@ -1,12 +1,15 @@
-import { Body, Controller, Delete, Param, ParseUUIDPipe, Post, UploadedFiles, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Param, ParseUUIDPipe, Post, Req, UploadedFiles, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { AddReviewDTO } from './dto/reviews.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileValidationInterceptor } from 'src/interceptors/file-validation.interceptor';
 import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
 
 @Controller('reviews')
 @ApiTags('Reviews')
+@UseGuards(JwtAuthGuard)
 export class ReviewsController {
   constructor(private readonly reviewsService: ReviewsService) {}
 
@@ -42,9 +45,10 @@ export class ReviewsController {
   addReview(
     @Body() body: AddReviewDTO,
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Param('id', ParseUUIDPipe) productId: string
+    @Param('id', ParseUUIDPipe) productId: string,
+    @Req() req
   ) {
-    return this.reviewsService.createReview(productId,body,files);
+    return this.reviewsService.createReview(productId,body,files, req.user as UserWithoutPassword);
   }
 
   @Delete(':id')
@@ -53,8 +57,9 @@ export class ReviewsController {
   @ApiResponse({ status: 200, description: 'Review deleted.' })
   @ApiResponse({ status: 404, description: 'Review not found.' })
   deleteReview(
-    @Param('id', ParseUUIDPipe) reviewId: string
+    @Param('id', ParseUUIDPipe) reviewId: string,
+    @Req() req,
   ) {
-    return this.reviewsService.removeReview(reviewId);
+    return this.reviewsService.removeReview(reviewId, req.user as UserWithoutPassword);
   }
 }
