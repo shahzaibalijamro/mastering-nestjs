@@ -35,6 +35,7 @@ export class UserService {
         store: true,
         updatedAt: true,
         username: true,
+        tokenVersion: true,
       },
     });
     if (!user) {

@@ -10,6 +10,7 @@ export interface UserWithoutPassword {
   email: string;
   name: string;
   role: UserRole;
+  tokenVersion: number;
   store?: Store;
   createdAt: Date;
   updatedAt: Date;
@@ -18,4 +19,10 @@ export interface UserWithoutPassword {
 export interface TokenPayload {
   sub: string;
   username: string;
+  tokenVersion: number;
+}
+
+export enum PasswordResetCalledFrom {
+  PROFILE = 'PROFILE',
+  LOGIN = 'LOGIN'
 }

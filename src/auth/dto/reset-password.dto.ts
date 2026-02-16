@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { IsEmail, IsEnum, IsNotEmpty, IsString, Matches } from 'class-validator';
+import { PasswordResetCalledFrom } from '../interfaces/user.interface';
 
 export class ResetPasswordWithTokenDTO {
   @ApiProperty({
@@ -34,4 +35,25 @@ export class ResetPasswordWithTokenDTO {
   newPassword: string;
 
 
+}
+
+
+export class ResetPasswordEmailDTO {
+  @ApiProperty({
+    description: 'User email received via email query params.',
+    example:
+      'abcd@gmail.com',
+  })
+  @IsNotEmpty()
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({
+    description:
+      'Enum value indicating where has the method being called from',
+    example: 'PROFILE',
+  })
+  @IsNotEmpty()
+  @IsEnum(PasswordResetCalledFrom)
+  from: PasswordResetCalledFrom;
 }

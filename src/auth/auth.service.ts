@@ -19,12 +19,12 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from 'src/user/user.service';
 import * as bcrypt from 'bcrypt';
-import { TokenPayload, UserWithoutPassword } from './interfaces/user.interface';
+import { PasswordResetCalledFrom, TokenPayload, UserWithoutPassword } from './interfaces/user.interface';
 import { UpdatePasswordDTO } from 'src/user/dto/user.dto';
 import { MailService } from 'src/mail/mail.service';
 import { randomBytes } from 'node:crypto';
 import { ResetToken } from './entities/resetToken.entity';
-import { ResetPasswordWithTokenDTO } from './dto/reset-password.dto';
+import { ResetPasswordEmailDTO, ResetPasswordWithTokenDTO } from './dto/reset-password.dto';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -103,6 +103,7 @@ export class AuthService {
     const payload: TokenPayload = {
       sub: user.id,
       username: user.username,
+      tokenVersion: user.tokenVersion,
     };
     return {
       token: await this.jwtService.signAsync(payload),
@@ -115,6 +116,7 @@ export class AuthService {
     const payload: TokenPayload = {
       sub: user.id,
       username: user.username,
+      tokenVersion: user.tokenVersion,
     };
     return {
       token: await this.jwtService.signAsync(payload),
@@ -148,18 +150,25 @@ export class AuthService {
     if (!doPasswordsMatch) {
       throw new ForbiddenException('Invalid credentials!');
     }
-    await this.userRepository.update(id, {
-      password: await bcrypt.hash(newPassword, 10),
-    });
+    const password = await bcrypt.hash(newPassword, 10);
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({
+        password,
+        tokenVersion: () => 'tokenVersion + 1',
+      })
+      .where('id = :id', { id })
+      .execute();
     return;
   }
 
-  async sendResetPasswordLink(email: string): Promise<ConfirmationMsg> {
-    console.log(email);
-    
+  async sendResetPasswordLink(body: ResetPasswordEmailDTO): Promise<ConfirmationMsg> {
+    const { email, from } = body;
+
     const user = await this.userService.getUserByUsernameOrEmail(email);
     console.log(user);
-    
+
     const { id, method, googleId, name } = user;
     if (googleId && method === signUpMethod.GOOGLE) {
       throw new ConflictException('This user has signed up via google!');
@@ -179,7 +188,7 @@ export class AuthService {
       token: hashedToken,
     });
     await this.resetTokenRepository.save(resetToken);
-    const resetLink = this.buildResetPasswordLink(token, user.email);
+    const resetLink = this.buildResetPasswordLink(token, user.email, from);
 
     await this.mailService.sendEmail({
       to: email,
@@ -230,9 +239,17 @@ export class AuthService {
       { isUsed: true },
     );
 
-    await this.userRepository.update(user.id, {
-      password: await bcrypt.hash(newPassword, 10),
-    });
+    const password = await bcrypt.hash(newPassword, 10);
+
+    await this.userRepository
+      .createQueryBuilder()
+      .update(User)
+      .set({
+        password,
+        tokenVersion: () => 'tokenVersion + 1',
+      })
+      .where('id = :id', { id: user.id })
+      .execute();
 
     return {
       id: user.id,
@@ -240,13 +257,13 @@ export class AuthService {
     };
   }
 
-  private buildResetPasswordLink(token: string, email: string): string {
+  private buildResetPasswordLink(token: string, email: string, from: PasswordResetCalledFrom): string {
     const frontendUrl = this.configService.get<string>('FRONTEND_URL');
     if (!frontendUrl) {
       throw new Error('Frontend url not found!');
     }
     const resetPath = '/auth/reset-password';
-    return `${frontendUrl}${resetPath}?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`;
+    return `${frontendUrl}${resetPath}?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}&from=${encodeURIComponent(from)}`;
   }
 
   private buildResetPasswordEmailTemplate({

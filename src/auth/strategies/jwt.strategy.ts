@@ -29,6 +29,9 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }
+    if (user.tokenVersion !== payload.tokenVersion) {
+      throw new UnauthorizedException('Invalid Token!');
+    }
     const { password, ...userWithoutPassword } = user;
     return userWithoutPassword;
   }

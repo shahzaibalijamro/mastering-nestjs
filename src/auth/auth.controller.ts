@@ -20,7 +20,7 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { UpdatePasswordDTO } from 'src/user/dto/user.dto';
-import { ResetPasswordWithTokenDTO } from './dto/reset-password.dto';
+import { ResetPasswordEmailDTO, ResetPasswordWithTokenDTO } from './dto/reset-password.dto';
 
 @Controller('auth')
 @ApiTags('Auth')
@@ -98,8 +98,8 @@ export class AuthController {
   }
 
   @Post('reset-password-email')
-  resetPassword(@Body('email') email: string): Promise<ConfirmationMsg> {
-    return this.authService.sendResetPasswordLink(email);
+  resetPassword(@Body() body: ResetPasswordEmailDTO): Promise<ConfirmationMsg> {
+    return this.authService.sendResetPasswordLink(body);
   }
 
   @Patch('reset-password')
