@@ -71,8 +71,25 @@ export class AuthService {
   }
 
   async createGoogleUser(body: CreateGoogleUserDTO): Promise<User> {
-    const existing = await this.userRepository.findOneBy({
-      googleId: body.googleId,
+    const existing = await this.userRepository.findOne({
+      where: {
+        googleId: body.googleId,
+      },
+      select: {
+        password: true,
+        createdAt: true,
+        email: true,
+        id: true,
+        googleId: true,
+        method: true,
+        profilePicture: true,
+        name: true,
+        role: true,
+        store: true,
+        updatedAt: true,
+        username: true,
+        tokenVersion: true,
+      },
     });
     const { profilePicture, ...remaining } = body;
     if (!existing) {

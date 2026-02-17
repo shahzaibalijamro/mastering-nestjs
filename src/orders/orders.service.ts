@@ -5,7 +5,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
-import { Order, OrderContactDetails, OrderStatus } from './entities/order.entity';
+import {
+  Order,
+  OrderContactDetails,
+  OrderStatus,
+} from './entities/order.entity';
 import { OrderItem } from './entities/order-item.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -50,14 +54,18 @@ export class OrdersService {
     const productIds = Array.from(quantities.keys());
     const products = await this.productRepository.find({
       where: { id: In(productIds) },
+      select: ['id', 'name', 'price'],
+      relations: {
+        store: false,
+        reviews: false,
+        tags: false,
+      },
     });
 
     if (products.length !== productIds.length) {
       const foundIds = new Set(products.map((product) => product.id));
       const missing = productIds.filter((id) => !foundIds.has(id));
-      throw new NotFoundException(
-        `Products not found: ${missing.join(', ')}`,
-      );
+      throw new NotFoundException(`Products not found: ${missing.join(', ')}`);
     }
 
     const orderItems: OrderItem[] = [];
@@ -117,9 +125,10 @@ export class OrdersService {
       items: orderItems,
     });
 
-    order.items.forEach((item) => {
-      item.order = order;
-    });
+    // order.items.forEach((item) => {
+    //   item.orderId = order.id;
+    //   item.order = { id: order.id } as Order;
+    // });
 
     const savedOrder = await this.orderRepository.save(order);
 
@@ -135,16 +144,33 @@ export class OrdersService {
 
   async getOrdersForUser(user: UserWithoutPassword): Promise<Order[]> {
     return this.orderRepository.find({
-      where: { user: { id: user.id } },
+      where: { userId: user.id },
       order: { createdAt: 'DESC' },
+      relations: {
+        items: true,
+      },
     });
+  }
+
+  async getOrdersForSellerStore(user: UserWithoutPassword): Promise<Order[]> {
+    return this.orderRepository
+      .createQueryBuilder('order')
+      .innerJoinAndSelect('order.items', 'item')
+      .innerJoin('item.product', 'product')
+      .innerJoin('product.store', 'store')
+      .innerJoin('store.owner', 'owner')
+      .where('owner.id = :ownerId', { ownerId: user.id })
+      .orderBy('order.createdAt', 'DESC')
+      .addOrderBy('item.createdAt', 'ASC')
+      .distinct(true)
+      .getMany();
   }
 
   async getOrderById(id: string, user: UserWithoutPassword): Promise<Order> {
     const order = await this.orderRepository.findOne({
       where: {
         id,
-        user: { id: user.id },
+        userId: user.id,
       },
     });
 

@@ -81,6 +81,13 @@ export class ContactInformation {
   })
   user: User;
 
+  @ApiProperty({
+    description: 'User Id of the user to whom this contact information belongs.',
+    example: 'b27fca1f-93f6-4bb8-894f-6c2c9a3b8c4e',
+  })
+  @Column('uuid')
+  userId: string;
+
   @CreateDateColumn()
   createdAt: Date;
 

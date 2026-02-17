@@ -108,12 +108,19 @@ export class Order {
   user: User;
 
   @ApiProperty({
+    description: 'Id of the user object to whom this order belongs.',
+    example: '8c5d7a8f-6fb4-4df5-b6f1-93d2f6333a21',
+  })
+  @Column('uuid')
+  userId: string;
+
+  @ApiProperty({
     description: 'Line items included in the order.',
     type: () => [OrderItem],
   })
   @OneToMany(() => OrderItem, (item) => item.order, {
     cascade: true,
-    eager: true,
+    eager: false,
   })
   items: OrderItem[];
 

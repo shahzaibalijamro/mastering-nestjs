@@ -62,8 +62,12 @@ export class OrderItem {
 
   @ManyToOne(() => Order, (order) => order.items, {
     onDelete: 'CASCADE',
+    eager:  false
   })
   order: Order;
+
+  @Column('uuid')
+  orderId: string
 
   @CreateDateColumn()
   createdAt: Date;

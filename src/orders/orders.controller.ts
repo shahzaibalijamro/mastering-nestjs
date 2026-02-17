@@ -14,6 +14,9 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
 import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Order } from './entities/order.entity';
+import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { Roles } from 'src/utils/roles.decorator';
+import { UserRole } from 'src/user/entities/user.entity';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -35,6 +38,19 @@ export class OrdersController {
   @ApiResponse({ status: 200, description: 'Orders returned.', type: [Order] })
   getOrders(@Req() req) {
     return this.ordersService.getOrdersForUser(req.user as UserWithoutPassword);
+  }
+
+  @Get('store')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.SELLER)
+  @ApiOperation({
+    summary: "List orders that contain products from the seller's store.",
+  })
+  @ApiResponse({ status: 200, description: 'Store orders returned.', type: [Order] })
+  getStoreOrders(@Req() req) {
+    return this.ordersService.getOrdersForSellerStore(
+      req.user as UserWithoutPassword,
+    );
   }
 
   @Get(':id')

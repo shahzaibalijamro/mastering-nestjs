@@ -26,6 +26,9 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
     const user = await this.userService.getUserByUsernameOrEmail(
       payload.username,
     );
+    console.log(user);
+    console.log(payload);
+    
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }

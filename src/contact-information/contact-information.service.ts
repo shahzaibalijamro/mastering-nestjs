@@ -31,9 +31,7 @@ export class ContactInformationService {
   async findAllForUser(user: UserWithoutPassword): Promise<ContactInformation[]> {
     return this.contactInformationRepository.find({
       where: {
-        user: {
-          id: user.id,
-        },
+        userId: user.id,
       },
       order: {
         createdAt: 'DESC',
@@ -63,9 +61,7 @@ export class ContactInformationService {
     const contact = await this.contactInformationRepository.findOne({
       where: {
         id,
-        user: {
-          id: user.id,
-        },
+        userId: user.id
       },
     });
     if (!contact) {
