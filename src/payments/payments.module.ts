@@ -19,5 +19,6 @@ import { StoreModule } from 'src/store/store.module';
   ],
   controllers: [PaymentsController, SellersController],
   providers: [PaymentsService],
+  exports: [PaymentsService],
 })
 export class PaymentsModule {}

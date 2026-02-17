@@ -1,4 +1,5 @@
 import { Store } from 'src/store/entities/store.entity';
+import { ContactInformation } from 'src/contact-information/entities/contact-information.entity';
 import {
   BeforeInsert,
   Column,
@@ -13,6 +14,7 @@ import {
 import * as bcrypt from 'bcrypt';
 import { ProductReview } from 'src/reviews/entities/reviews.entity';
 import { Tag } from 'src/tags/entities/tags.entity';
+import { Order } from 'src/orders/entities/order.entity';
 
 export enum UserRole {
   USER = 'USER',
@@ -68,14 +70,22 @@ export class User {
   @Column({ default: 1 , select: false})
   tokenVersion: number;
 
-  @OneToOne((type) => Store, (store) => store.owner)
+  @OneToOne((type) => Store, (store: Store) => store.owner)
   store: Store;
 
-  @OneToMany(type => ProductReview, (review) => review.user)
+  @OneToMany(type => ProductReview, (review: ProductReview) => review.user)
   reviews: ProductReview[];
 
-  @ManyToMany(type => Tag, (tag) => tag.user)
+  @ManyToMany(type => Tag, (tag: Tag) => tag.user)
   addedTags: Tag[];
+
+  @OneToMany(() => ContactInformation, (contact: ContactInformation) => contact.user, {
+    cascade: true,
+  })
+  contactInformation: ContactInformation[];
+
+  @OneToMany(() => Order, (order: Order) => order.user)
+  orders: Order[];
   
   @CreateDateColumn()
   createdAt: Date;

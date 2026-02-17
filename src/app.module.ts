@@ -13,6 +13,8 @@ import { StoreModule } from './store/store.module';
 import { JwtModule } from '@nestjs/jwt';
 import { PaymentsModule } from './payments/payments.module';
 import { MailModule } from './mail/mail.module';
+import { ContactInformationModule } from './contact-information/contact-information.module';
+import { OrdersModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -51,7 +53,9 @@ import { MailModule } from './mail/mail.module';
     UserModule,
     StoreModule,
     PaymentsModule,
-    MailModule
+    MailModule,
+    ContactInformationModule,
+    OrdersModule
   ],
   controllers: [],
   exports: [],

@@ -9,11 +9,26 @@ import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { UserRole } from 'src/user/entities/user.entity';
-import { Payment } from './entities/payment.entity';
+import { User, UserRole } from 'src/user/entities/user.entity';
+import { Payment, PaymentPurpose } from './entities/payment.entity';
 import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
 import { UserService } from 'src/user/user.service';
 import { StoreService } from 'src/store/store.service';
+import { Order } from 'src/orders/entities/order.entity';
+
+interface ChargeOrderParams {
+  amountInCents: number;
+  currency: string;
+  paymentMethodId: string;
+  user: UserWithoutPassword;
+}
+
+interface RecordPaymentParams {
+  paymentIntent: Stripe.PaymentIntent;
+  user: UserWithoutPassword;
+  purpose: PaymentPurpose;
+  order?: Order;
+}
 
 @Injectable()
 export class PaymentsService {
@@ -93,14 +108,11 @@ export class PaymentsService {
       owner: dbUser,
     });
 
-    const payment = this.paymentRepository.create({
-      stripePaymentIntentId: paymentIntent.id,
-      amount: this.registrationFeeAmount,
-      currency: this.registrationFeeCurrency,
-      status: paymentIntent.status,
+    await this.recordPayment({
+      paymentIntent,
       user: dbUser,
+      purpose: PaymentPurpose.SELLER_REGISTRATION,
     });
-    await this.paymentRepository.save(payment);
 
     return {
       message: 'Seller registration completed',
@@ -108,23 +120,57 @@ export class PaymentsService {
     };
   }
 
-  create(createPaymentDto: CreatePaymentDto) {
-    return 'This action adds a new payment';
+  async chargeOrder(params: ChargeOrderParams) {
+    const { amountInCents, currency, paymentMethodId, user } = params;
+
+    if (amountInCents <= 0) {
+      throw new BadRequestException('Charge amount must be greater than zero');
+    }
+
+    try {
+      const paymentIntent = await this.stripe.paymentIntents.create({
+        amount: amountInCents,
+        currency,
+        payment_method: paymentMethodId,
+        confirm: true,
+        description: `Order charge for user ${user.id}`,
+        metadata: {
+          userId: user.id,
+          purpose: PaymentPurpose.ORDER,
+        },
+        automatic_payment_methods: {
+          enabled: true,
+          allow_redirects: 'never',
+        },
+      });
+
+      if (paymentIntent.status !== 'succeeded') {
+        throw new BadRequestException(
+          'Payment was not completed. Please try another card.',
+        );
+      }
+
+      return paymentIntent;
+    } catch (error) {
+      throw new BadRequestException('Payment failed. Please try another card.');
+    }
   }
 
-  findAll() {
-    return `This action returns all payments`;
-  }
+  async recordPayment(params: RecordPaymentParams) {
+    const { paymentIntent, user, purpose, order } = params;
 
-  findOne(id: number) {
-    return `This action returns a #${id} payment`;
-  }
+    const payment = this.paymentRepository.create({
+      stripePaymentIntentId: paymentIntent.id,
+      amount: paymentIntent.amount,
+      currency: paymentIntent.currency,
+      status: paymentIntent.status,
+      user: { id: user.id } as User,
+      purpose,
+      order,
+    });
 
-  update(id: number, updatePaymentDto: UpdatePaymentDto) {
-    return `This action updates a #${id} payment`;
-  }
+    await this.paymentRepository.save(payment);
 
-  remove(id: number) {
-    return `This action removes a #${id} payment`;
+    return payment;
   }
 }
