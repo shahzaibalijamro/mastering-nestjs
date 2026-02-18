@@ -18,10 +18,38 @@ export class TagsService {
         return await this.tagRepository.find();
     }
 
+    async getAllTagsByUser(user: UserWithoutPassword): Promise<Tag[]> {
+        return await this.tagRepository.find({
+            where: {
+                userId: user.id
+            },
+            select: {
+                createdAt: true,
+                id: true,
+                name: true,
+                products: {
+                    id: true,
+                    reviews: false,
+                    tags: false
+                },
+                updatedAt: true,
+                userId: true,
+                user: false
+            },
+            relations: {
+                products: {
+                    reviews: false,
+                    tags: false
+                }
+            }
+        })
+    }
+
     async createTag(body: addTagDTO, user: UserWithoutPassword): Promise<ConfirmationMsg> {
         const tag = await this.tagRepository.save({
             name: body.name,
             user,
+            userId: user.id
         })
         return {
             id: tag.id,
@@ -43,7 +71,7 @@ export class TagsService {
 
     async deleteTag(id: string, user: UserWithoutPassword): Promise<ConfirmationMsg> {
         const tag: Tag = await this.findTagById(id);
-        if (tag.user.id !== user.id) {
+        if (tag.userId !== user.id) {
             throw new ForbiddenException("Forbidden!");
         }
         const tagId = tag.id;

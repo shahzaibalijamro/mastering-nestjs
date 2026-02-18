@@ -23,6 +23,9 @@ export class Tag {
   @ManyToMany(type => User, (user) => user.addedTags)
   user: User;
 
+  @Column('uuid')
+  userId: string;
+
   @ApiProperty({
     description: 'Tag name.',
     example: 'Footwear',

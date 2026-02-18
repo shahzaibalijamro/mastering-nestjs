@@ -32,8 +32,18 @@ export class TagsController {
     @Get()
     @ApiOperation({ summary: 'List all tags' })
     @ApiResponse({ status: 200, description: 'List of tags.', type: Tag, isArray: true })
-    getAllTasks() {
+    getAllTags() {
         return this.tagsService.getAllTags();
+    }
+
+    @Roles(UserRole.SELLER)
+    @Get('me')
+    @ApiOperation({ summary: 'List all tags' })
+    @ApiResponse({ status: 200, description: 'List of tags.', type: Tag, isArray: true })
+    getAllTagsByUser(
+        @Req() req,
+    ) {
+        return this.tagsService.getAllTagsByUser(req.user as UserWithoutPassword);
     }
 
     @Public()
@@ -42,7 +52,7 @@ export class TagsController {
     @ApiParam({ name: 'id', description: 'Tag ID (UUID)' })
     @ApiResponse({ status: 200, description: 'Tag found.', type: Tag })
     @ApiResponse({ status: 404, description: 'Tag not found.' })
-    getTaskById(
+    getTagById(
         @Param('id', ParseUUIDPipe) id: string
     ) {
         return this.tagsService.findTagById(id);
@@ -54,7 +64,7 @@ export class TagsController {
     @ApiParam({ name: 'id', description: 'Tag ID (UUID)' })
     @ApiResponse({ status: 200, description: 'Tag deleted.' })
     @ApiResponse({ status: 404, description: 'Tag not found.' })
-    deleteTask(
+    deleteTag(
         @Param('id', ParseUUIDPipe) id: string,
         @Req() req,
     ) {

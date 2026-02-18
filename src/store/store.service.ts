@@ -28,6 +28,7 @@ export class StoreService {
       where: {
         owner: { id: userId },
       },
+      select: ['address', 'phoneNumber', 'idCardNumber' , 'createdAt' , 'updatedAt' , 'name' , 'description' , 'id' , 'picture']
     });
     if (!store) {
       throw new NotFoundException('Store does not exist!');
