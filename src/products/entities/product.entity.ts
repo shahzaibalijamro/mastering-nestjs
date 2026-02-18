@@ -12,7 +12,7 @@ import {
 import { ProductReview } from '../../reviews/entities/reviews.entity';
 import { Tag } from '../../tags/entities/tags.entity';
 import { Store } from 'src/store/entities/store.entity';
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum MediaType {
   video = 'video',
@@ -62,6 +62,20 @@ export class Product {
   })
   @Column('json')
   media: Media[];
+
+  @ApiProperty({
+    description: 'Total users who have favorited this product.',
+    example: 27,
+    default: 0,
+  })
+  favoritesCount?: number;
+
+  @ApiPropertyOptional({
+    description:
+      'Whether the currently authenticated user has favorited this product.',
+    example: true,
+  })
+  isFavorited?: boolean;
 
   @OneToMany((type) => ProductReview, (review) => review.product, {
     eager: true,

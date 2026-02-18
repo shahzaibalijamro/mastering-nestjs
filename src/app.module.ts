@@ -16,6 +16,7 @@ import { MailModule } from './mail/mail.module';
 import { ContactInformationModule } from './contact-information/contact-information.module';
 import { OrdersModule } from './orders/orders.module';
 import { CartModule } from './cart/cart.module';
+import { FavoritesModule } from './favorites/favorites.module';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { CartModule } from './cart/cart.module';
     ContactInformationModule,
     OrdersModule,
     CartModule,
+    FavoritesModule,
   ],
   controllers: [],
   exports: [],

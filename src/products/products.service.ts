@@ -26,6 +26,7 @@ import { Tag } from 'src/tags/entities/tags.entity';
 import { ReviewsService } from 'src/reviews/reviews.service';
 import { ProductReview } from 'src/reviews/entities/reviews.entity';
 import { Store } from 'src/store/entities/store.entity';
+import { Favorite } from 'src/favorites/entities/favorite.entity';
 
 @Injectable()
 export class ProductsService {
@@ -37,6 +38,8 @@ export class ProductsService {
     private readonly reviewsService: ReviewsService,
     @InjectRepository(Store)
     private readonly storeRepository: Repository<Store>,
+    @InjectRepository(Favorite)
+    private readonly favoriteRepository: Repository<Favorite>,
   ) {}
 
   private async getStoreByUser(userId: string): Promise<Store> {
@@ -67,9 +70,10 @@ export class ProductsService {
   }
 
   async getProducts(): Promise<Product[]> {
-    return await this.productRepository.find({
+    const products = await this.productRepository.find({
       loadEagerRelations: false,
     });
+    return this.attachFavoritesCount(products);
   }
 
   async getProductsByTag(tag: Tag): Promise<Product[]> {
@@ -78,9 +82,10 @@ export class ProductsService {
         tags: {
           id: tag.id
         }
-      }
+      },
+      loadEagerRelations: false,
     })
-    return products;
+    return this.attachFavoritesCount(products);
   }
 
   async getProductsByUser(user: UserWithoutPassword): Promise<Product[]> {
@@ -95,9 +100,10 @@ export class ProductsService {
       },
       relations: {
         store: false,
-      }
+      },
+      loadEagerRelations: false,
     });
-    return products;
+    return this.attachFavoritesCount(products);
   }
 
   async addProduct(
@@ -177,7 +183,33 @@ export class ProductsService {
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    return product;
+    const withFavoriteCount = await this.attachFavoritesCount([product]);
+    return withFavoriteCount[0];
+  }
+
+  private async attachFavoritesCount(products: Product[]): Promise<Product[]> {
+    if (products.length === 0) {
+      return products;
+    }
+
+    const productIds = products.map((product) => product.id);
+    const rows = await this.favoriteRepository
+      .createQueryBuilder('favorite')
+      .select('favorite.productId', 'productId')
+      .addSelect('COUNT(favorite.id)', 'favoritesCount')
+      .where('favorite.productId IN (:...productIds)', { productIds })
+      .groupBy('favorite.productId')
+      .getRawMany<{ productId: string; favoritesCount: string }>();
+
+    const countsByProductId = new Map(
+      rows.map((row) => [row.productId, Number.parseInt(row.favoritesCount, 10)]),
+    );
+
+    products.forEach((product) => {
+      product.favoritesCount = countsByProductId.get(product.id) ?? 0;
+    });
+
+    return products;
   }
 
   async updateProduct(

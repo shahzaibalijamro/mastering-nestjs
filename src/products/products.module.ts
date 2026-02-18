@@ -8,10 +8,11 @@ import { TagsModule } from 'src/tags/tags.module';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { ReviewsModule } from 'src/reviews/reviews.module';
 import { Store } from 'src/store/entities/store.entity';
+import { Favorite } from 'src/favorites/entities/favorite.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Product, Store]),
+    TypeOrmModule.forFeature([Product, Store, Favorite]),
     CloudinaryModule,
     TagsModule,
     ReviewsModule,
