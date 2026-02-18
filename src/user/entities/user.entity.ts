@@ -15,6 +15,7 @@ import * as bcrypt from 'bcrypt';
 import { ProductReview } from 'src/reviews/entities/reviews.entity';
 import { Tag } from 'src/tags/entities/tags.entity';
 import { Order } from 'src/orders/entities/order.entity';
+import { Cart } from 'src/cart/entities/cart.entity';
 
 export enum UserRole {
   USER = 'USER',
@@ -86,6 +87,9 @@ export class User {
 
   @OneToMany(() => Order, (order: Order) => order.user)
   orders: Order[];
+
+  @OneToOne(() => Cart, (cart) => cart.user)
+  cart: Cart;
   
   @CreateDateColumn()
   createdAt: Date;

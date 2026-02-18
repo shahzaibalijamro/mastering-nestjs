@@ -34,12 +34,14 @@ export class Tag {
   @Column({ unique: true })
   name: string;
 
-  @ManyToMany((type) => Product, (product) => product.tags)
+  @ManyToMany((type) => Product, (product) => product.tags, {
+    eager: false,
+  })
   products: Product[];
 
-  @CreateDateColumn()
+  @CreateDateColumn({select:false})
   createdAt: Date;
 
-  @UpdateDateColumn()
+  @UpdateDateColumn({select:false})
   updatedAt: Date;
 }

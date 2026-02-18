@@ -15,6 +15,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { MailModule } from './mail/mail.module';
 import { ContactInformationModule } from './contact-information/contact-information.module';
 import { OrdersModule } from './orders/orders.module';
+import { CartModule } from './cart/cart.module';
 
 @Module({
   imports: [
@@ -55,7 +56,8 @@ import { OrdersModule } from './orders/orders.module';
     PaymentsModule,
     MailModule,
     ContactInformationModule,
-    OrdersModule
+    OrdersModule,
+    CartModule,
   ],
   controllers: [],
   exports: [],
