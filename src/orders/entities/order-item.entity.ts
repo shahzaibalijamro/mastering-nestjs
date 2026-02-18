@@ -3,6 +3,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
@@ -10,7 +11,15 @@ import {
 import { Product } from 'src/products/entities/product.entity';
 import { Order } from './order.entity';
 
+export enum OrderItemStatus {
+  PACKING = 'PACKING',
+  SHIPPED = 'SHIPPED',
+  ARRIVED = 'ARRIVED',
+}
+
 @Entity()
+@Index(['storeId'])
+@Index(['storeId', 'status'])
 export class OrderItem {
   @ApiProperty({
     description: 'Unique identifier for the order item.',
@@ -53,6 +62,26 @@ export class OrderItem {
   })
   @Column('decimal', { precision: 10, scale: 2 })
   subtotal: number;
+
+  @ApiProperty({
+    description: 'Store identifier for the product at purchase time.',
+    example: '8c5d7a8f-6fb4-4df5-b6f1-93d2f6333a21',
+    required: false,
+  })
+  @Column('uuid', { nullable: true })
+  storeId?: string;
+
+  @ApiProperty({
+    description: 'Fulfillment status for this item in the seller workflow.',
+    enum: OrderItemStatus,
+    default: OrderItemStatus.PACKING,
+  })
+  @Column({
+    type: 'enum',
+    enum: OrderItemStatus,
+    default: OrderItemStatus.PACKING,
+  })
+  status: OrderItemStatus;
 
   @ManyToOne(() => Product, {
     nullable: true,

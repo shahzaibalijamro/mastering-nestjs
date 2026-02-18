@@ -70,6 +70,14 @@ export class Order {
   totalAmount: number;
 
   @ApiProperty({
+    description:
+      'Total delivery fee charged for this order based on distinct stores.',
+    example: 20.0,
+  })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
+  deliveryFee: number;
+
+  @ApiProperty({
     description: 'Currency used for the order total.',
     example: 'usd',
   })

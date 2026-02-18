@@ -7,10 +7,11 @@ import { PaymentsModule } from 'src/payments/payments.module';
 import { ContactInformationModule } from 'src/contact-information/contact-information.module';
 import { OrdersController } from './orders.controller';
 import { OrdersService } from './orders.service';
+import { Store } from 'src/store/entities/store.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Order, OrderItem, Product]),
+    TypeOrmModule.forFeature([Order, OrderItem, Product, Store]),
     PaymentsModule,
     ContactInformationModule,
   ],

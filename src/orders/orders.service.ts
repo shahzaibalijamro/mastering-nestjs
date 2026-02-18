@@ -4,13 +4,13 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import {
   Order,
   OrderContactDetails,
   OrderStatus,
 } from './entities/order.entity';
-import { OrderItem } from './entities/order-item.entity';
+import { OrderItem, OrderItemStatus } from './entities/order-item.entity';
 import { Product } from 'src/products/entities/product.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
@@ -18,10 +18,13 @@ import { ContactInformationService } from 'src/contact-information/contact-infor
 import { PaymentsService } from 'src/payments/payments.service';
 import { PaymentPurpose } from 'src/payments/entities/payment.entity';
 import { User } from 'src/user/entities/user.entity';
+import { Store } from 'src/store/entities/store.entity';
+import { UpdateOrderItemStatusDto } from './dto/update-order-item-status.dto';
 
 @Injectable()
 export class OrdersService {
   private readonly currency = 'usd';
+  private readonly deliveryFeePerStoreInCents = 1000;
 
   constructor(
     @InjectRepository(Order)
@@ -30,6 +33,8 @@ export class OrdersService {
     private readonly orderItemRepository: Repository<OrderItem>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
+    @InjectRepository(Store)
+    private readonly storeRepository: Repository<Store>,
     private readonly paymentsService: PaymentsService,
     private readonly contactInformationService: ContactInformationService,
   ) {}
@@ -52,15 +57,12 @@ export class OrdersService {
     }
 
     const productIds = Array.from(quantities.keys());
-    const products = await this.productRepository.find({
-      where: { id: In(productIds) },
-      select: ['id', 'name', 'price'],
-      relations: {
-        store: false,
-        reviews: false,
-        tags: false,
-      },
-    });
+    const products = await this.productRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.store', 'store')
+      .select(['product.id', 'product.name', 'product.price', 'store.id'])
+      .where('product.id IN (:...productIds)', { productIds })
+      .getMany();
 
     if (products.length !== productIds.length) {
       const foundIds = new Set(products.map((product) => product.id));
@@ -70,17 +72,24 @@ export class OrdersService {
 
     const orderItems: OrderItem[] = [];
     let totalAmountInCents = 0;
+    const storeIds = new Set<string>();
 
     for (const product of products) {
       const quantity = quantities.get(product.id) ?? 0;
       if (quantity < 1) {
         throw new BadRequestException('Quantity must be at least 1.');
       }
+      if (!product.store?.id) {
+        throw new BadRequestException(
+          `Product ${product.id} is missing a valid store.`,
+        );
+      }
 
       const unitPrice = Number(product.price);
       const unitPriceInCents = Math.round(unitPrice * 100);
       const subtotalInCents = unitPriceInCents * quantity;
       totalAmountInCents += subtotalInCents;
+      storeIds.add(product.store.id);
 
       const orderItem = this.orderItemRepository.create({
         productId: product.id,
@@ -88,10 +97,16 @@ export class OrdersService {
         unitPrice,
         quantity,
         subtotal: Number((subtotalInCents / 100).toFixed(2)),
+        storeId: product.store.id,
+        status: OrderItemStatus.PACKING,
         product,
       });
       orderItems.push(orderItem);
     }
+
+    const deliveryFeeInCents =
+      storeIds.size * this.deliveryFeePerStoreInCents;
+    totalAmountInCents += deliveryFeeInCents;
 
     if (totalAmountInCents <= 0) {
       throw new BadRequestException('Order total must be greater than zero.');
@@ -117,6 +132,7 @@ export class OrdersService {
 
     const order = this.orderRepository.create({
       totalAmount: Number((totalAmountInCents / 100).toFixed(2)),
+      deliveryFee: Number((deliveryFeeInCents / 100).toFixed(2)),
       currency: this.currency,
       stripePaymentIntentId: paymentIntent.id,
       status: OrderStatus.PAID,
@@ -152,18 +168,79 @@ export class OrdersService {
     });
   }
 
-  async getOrdersForSellerStore(user: UserWithoutPassword): Promise<Order[]> {
-    return this.orderRepository
+  async getOrdersForSellerStore(
+    user: UserWithoutPassword,
+    itemStatus?: OrderItemStatus,
+  ): Promise<Order[]> {
+    const store = await this.getStoreForSeller(user.id);
+
+    const query = this.orderRepository
       .createQueryBuilder('order')
       .innerJoinAndSelect('order.items', 'item')
-      .innerJoin('item.product', 'product')
-      .innerJoin('product.store', 'store')
-      .innerJoin('store.owner', 'owner')
-      .where('owner.id = :ownerId', { ownerId: user.id })
+      .leftJoin('item.product', 'product')
+      .leftJoin('product.store', 'productStore')
+      .where(
+        new Brackets((qb) => {
+          qb.where('item.storeId = :storeId', { storeId: store.id }).orWhere(
+            'item.storeId IS NULL AND productStore.id = :storeId',
+            { storeId: store.id },
+          );
+        }),
+      )
       .orderBy('order.createdAt', 'DESC')
       .addOrderBy('item.createdAt', 'ASC')
-      .distinct(true)
-      .getMany();
+      .distinct(true);
+
+    if (itemStatus) {
+      query.andWhere('item.status = :itemStatus', { itemStatus });
+    }
+
+    return query.getMany();
+  }
+
+  async updateOrderItemStatusForSeller(
+    user: UserWithoutPassword,
+    orderItemId: string,
+    body: UpdateOrderItemStatusDto,
+  ): Promise<OrderItem> {
+    const store = await this.getStoreForSeller(user.id);
+
+    const item = await this.orderItemRepository
+      .createQueryBuilder('item')
+      .leftJoin('item.product', 'product')
+      .leftJoin('product.store', 'productStore')
+      .where('item.id = :orderItemId', { orderItemId })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('item.storeId = :storeId', { storeId: store.id }).orWhere(
+            'item.storeId IS NULL AND productStore.id = :storeId',
+            { storeId: store.id },
+          );
+        }),
+      )
+      .getOne();
+
+    if (!item) {
+      throw new NotFoundException(
+        'Order item not found for this seller store',
+      );
+    }
+
+    item.status = body.status;
+    return this.orderItemRepository.save(item);
+  }
+
+  private async getStoreForSeller(ownerId: string): Promise<Store> {
+    const store = await this.storeRepository.findOne({
+      where: { owner: { id: ownerId } },
+      select: { id: true },
+    });
+
+    if (!store) {
+      throw new NotFoundException('Store does not exist!');
+    }
+
+    return store;
   }
 
   async getOrderById(id: string, user: UserWithoutPassword): Promise<Order> {
@@ -171,6 +248,9 @@ export class OrdersService {
       where: {
         id,
         userId: user.id,
+      },
+      relations: {
+        items: true,
       },
     });
 
