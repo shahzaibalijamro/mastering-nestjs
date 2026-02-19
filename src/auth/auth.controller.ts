@@ -36,7 +36,7 @@ export class AuthController {
   async googleCallback(@Req() req, @Res() res) {
     const user = req.user as UserWithoutPassword;
     const { token } = await this.authService.signIn(user);
-    const redirectUrl = `http://localhost:3001/auth/login?token=${token}`;
+    const redirectUrl = `${process.env.FRONTEND_URL}/auth/login?token=${token}`;
     return res.redirect(redirectUrl);
   }
 
