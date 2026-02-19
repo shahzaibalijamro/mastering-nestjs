@@ -5,9 +5,9 @@ import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/s
 import { Tag } from './entities/tags.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../temp_utils/roles.decorator';
+import { Roles } from '../utils/roles.decorator';
 import {  UserRole } from '../user/entities/user.entity';
-import { Public } from '../temp_utils/public.decorator';
+import { Public } from '../utils/public.decorator';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 
 @UseGuards(JwtAuthGuard, RolesGuard)

@@ -22,9 +22,9 @@ import {
   UpdateProductMediaDTO,
 } from './dto/products.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { FileValidationInterceptor } from '../temp_interceptors/file-validation.interceptor';
+import { FileValidationInterceptor } from '../interceptors/file-validation.interceptor';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { Public } from '../temp_utils/public.decorator';
+import { Public } from '../utils/public.decorator';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -35,7 +35,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
-import { Roles } from '../temp_utils/roles.decorator';
+import { Roles } from '../utils/roles.decorator';
 import { UserRole } from '../user/entities/user.entity';
 import { RolesGuard } from '../auth/guards/roles.guard';
 

@@ -9,9 +9,9 @@ import { Repository } from 'typeorm';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { AddReviewDTO } from './dto/reviews.dto';
 import { UploadApiResponse } from 'cloudinary';
-import { formatCloudinaryMediaFiles } from '../temp_utils/utils';
+import { formatCloudinaryMediaFiles } from '../utils/utils';
 import { Product } from '../products/entities/product.entity';
-import { ConfirmationMsg } from '../temp_utils/confirmation.interface';
+import { ConfirmationMsg } from '../utils/confirmation.interface';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 
 @Injectable()

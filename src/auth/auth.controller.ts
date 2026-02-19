@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDTO, ValidateUserDTO } from './dto/user.dto';
-import { ConfirmationMsg, Token } from '../temp_utils/confirmation.interface';
+import { ConfirmationMsg, Token } from '../utils/confirmation.interface';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserWithoutPassword } from './interfaces/user.interface';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
