@@ -13,13 +13,13 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDTO, ValidateUserDTO } from './dto/user.dto';
-import { ConfirmationMsg, Token } from 'src/utils/confirmation.interface';
+import { ConfirmationMsg, Token } from '../utils/confirmation.interface';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { UserWithoutPassword } from './interfaces/user.interface';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
-import { UpdatePasswordDTO } from 'src/user/dto/user.dto';
+import { UpdatePasswordDTO } from '../user/dto/user.dto';
 import { ResetPasswordEmailDTO, ResetPasswordWithTokenDTO } from './dto/reset-password.dto';
 
 @Controller('auth')

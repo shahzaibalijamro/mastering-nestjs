@@ -1,11 +1,11 @@
 import { Body, Controller, Get, Patch, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { StoreService } from './store.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/utils/roles.decorator';
-import { UserRole } from 'src/user/entities/user.entity';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../utils/roles.decorator';
+import { UserRole } from '../user/entities/user.entity';
 import { Store } from './entities/store.entity';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { UpdateStoreDTO } from './dto/store.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 

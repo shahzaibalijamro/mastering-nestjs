@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Media } from 'src/products/entities/product.entity';
+import { Media } from '../../products/entities/product.entity';
 
 export class CartProductDto {
   @ApiProperty({

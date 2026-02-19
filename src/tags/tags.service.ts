@@ -3,9 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Tag } from './entities/tags.entity';
 import { Repository } from 'typeorm';
 import { addTagDTO } from './dto/tags.dto';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { ProductsService } from 'src/products/products.service';
+import { ConfirmationMsg } from '../utils/confirmation.interface';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { ProductsService } from '../products/products.service';
 
 @Injectable()
 export class TagsService {

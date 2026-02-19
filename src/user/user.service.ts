@@ -6,10 +6,10 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './entities/user.entity';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { UpdateUserDTO } from './dto/user.dto';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { StoreService } from 'src/store/store.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { StoreService } from '../store/store.service';
 
 @Injectable()
 export class UserService {

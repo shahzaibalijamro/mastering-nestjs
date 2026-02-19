@@ -15,10 +15,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { Product } from 'src/products/entities/product.entity';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { Product } from '../products/entities/product.entity';
+import { ConfirmationMsg } from '../utils/confirmation.interface';
 import { ProductFavoriteStatusDto } from './dto/product-favorite-status.dto';
 import { FavoritesService } from './favorites.service';
 

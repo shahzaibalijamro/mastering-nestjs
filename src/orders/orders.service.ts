@@ -11,14 +11,14 @@ import {
   OrderStatus,
 } from './entities/order.entity';
 import { OrderItem, OrderItemStatus } from './entities/order-item.entity';
-import { Product } from 'src/products/entities/product.entity';
+import { Product } from '../products/entities/product.entity';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { ContactInformationService } from 'src/contact-information/contact-information.service';
-import { PaymentsService } from 'src/payments/payments.service';
-import { PaymentPurpose } from 'src/payments/entities/payment.entity';
-import { User } from 'src/user/entities/user.entity';
-import { Store } from 'src/store/entities/store.entity';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { ContactInformationService } from '../contact-information/contact-information.service';
+import { PaymentsService } from '../payments/payments.service';
+import { PaymentPurpose } from '../payments/entities/payment.entity';
+import { User } from '../user/entities/user.entity';
+import { Store } from '../store/entities/store.entity';
 import { UpdateOrderItemStatusDto } from './dto/update-order-item-status.dto';
 
 @Injectable()

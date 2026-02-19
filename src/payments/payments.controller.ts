@@ -1,8 +1,8 @@
 import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RegisterSellerDto } from './dto/register-seller.dto';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
 
 @Controller('payments')

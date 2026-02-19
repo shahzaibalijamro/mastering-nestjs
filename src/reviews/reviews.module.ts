@@ -3,9 +3,9 @@ import { ReviewsController } from './reviews.controller';
 import { ReviewsService } from './reviews.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductReview } from './entities/reviews.entity';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
-import { TagsModule } from 'src/tags/tags.module';
-import { Product } from 'src/products/entities/product.entity';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { TagsModule } from '../tags/tags.module';
+import { Product } from '../products/entities/product.entity';
 
 @Module({
   imports: [

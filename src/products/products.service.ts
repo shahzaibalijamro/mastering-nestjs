@@ -14,19 +14,19 @@ import {
   UpdateProductMediaDTO,
 } from './dto/products.dto';
 import { ConfirmationMsg } from '../utils/confirmation.interface';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';
-import { formatCloudinaryMediaFiles } from 'src/utils/utils';
-import { TagsService } from 'src/tags/tags.service';
+import { formatCloudinaryMediaFiles } from '../utils/utils';
+import { TagsService } from '../tags/tags.service';
 import {
   UserWithoutPassword,
-} from 'src/auth/interfaces/user.interface';
-import { User } from 'src/user/entities/user.entity';
-import { Tag } from 'src/tags/entities/tags.entity';
-import { ReviewsService } from 'src/reviews/reviews.service';
-import { ProductReview } from 'src/reviews/entities/reviews.entity';
-import { Store } from 'src/store/entities/store.entity';
-import { Favorite } from 'src/favorites/entities/favorite.entity';
+} from '../auth/interfaces/user.interface';
+import { User } from '../user/entities/user.entity';
+import { Tag } from '../tags/entities/tags.entity';
+import { ReviewsService } from '../reviews/reviews.service';
+import { ProductReview } from '../reviews/entities/reviews.entity';
+import { Store } from '../store/entities/store.entity';
+import { Favorite } from '../favorites/entities/favorite.entity';
 
 @Injectable()
 export class ProductsService {

@@ -1,5 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString, Length } from 'class-validator';
-import type { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import type { UserWithoutPassword } from '../../auth/interfaces/user.interface';
 
 export class CreateStoreDTO {
   @IsNotEmpty()

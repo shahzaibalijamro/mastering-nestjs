@@ -1,7 +1,7 @@
-import { Store } from 'src/store/entities/store.entity';
-import { ContactInformation } from 'src/contact-information/entities/contact-information.entity';
-import { Order } from 'src/orders/entities/order.entity';
-import { ProfilePicture, signUpMethod, UserRole } from 'src/user/entities/user.entity';
+import { Store } from '../../store/entities/store.entity';
+import { ContactInformation } from '../../contact-information/entities/contact-information.entity';
+import { Order } from '../../orders/entities/order.entity';
+import { ProfilePicture, signUpMethod, UserRole } from '../../user/entities/user.entity';
 
 export interface UserWithoutPassword {
   id: string;

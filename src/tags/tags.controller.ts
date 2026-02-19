@@ -3,12 +3,12 @@ import { TagsService } from './tags.service';
 import { addTagDTO } from './dto/tags.dto';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Tag } from './entities/tags.entity';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/utils/roles.decorator';
-import {  UserRole } from 'src/user/entities/user.entity';
-import { Public } from 'src/utils/public.decorator';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../utils/roles.decorator';
+import {  UserRole } from '../user/entities/user.entity';
+import { Public } from '../utils/public.decorator';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('tags')

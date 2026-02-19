@@ -17,15 +17,15 @@ import {
   ValidateUserDTO,
 } from './dto/user.dto';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from 'src/user/user.service';
+import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import {
   PasswordResetCalledFrom,
   TokenPayload,
   UserWithoutPassword,
 } from './interfaces/user.interface';
-import { UpdatePasswordDTO } from 'src/user/dto/user.dto';
-import { MailService } from 'src/mail/mail.service';
+import { UpdatePasswordDTO } from '../user/dto/user.dto';
+import { MailService } from '../mail/mail.service';
 import { randomBytes } from 'node:crypto';
 import { ResetToken } from './entities/resetToken.entity';
 import {
@@ -33,7 +33,7 @@ import {
   ResetPasswordWithTokenDTO,
 } from './dto/reset-password.dto';
 import { ConfigService } from '@nestjs/config';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 
 @Injectable()
 export class AuthService {

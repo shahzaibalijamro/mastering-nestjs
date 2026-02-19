@@ -11,7 +11,7 @@ import {
 } from 'typeorm';
 import { ProductReview } from '../../reviews/entities/reviews.entity';
 import { Tag } from '../../tags/entities/tags.entity';
-import { Store } from 'src/store/entities/store.entity';
+import { Store } from '../../store/entities/store.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export enum MediaType {

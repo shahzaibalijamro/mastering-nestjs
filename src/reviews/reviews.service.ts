@@ -6,13 +6,13 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { ProductReview } from './entities/reviews.entity';
 import { Repository } from 'typeorm';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { AddReviewDTO } from './dto/reviews.dto';
 import { UploadApiResponse } from 'cloudinary';
-import { formatCloudinaryMediaFiles } from 'src/utils/utils';
-import { Product } from 'src/products/entities/product.entity';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { formatCloudinaryMediaFiles } from '../utils/utils';
+import { Product } from '../products/entities/product.entity';
+import { ConfirmationMsg } from '../utils/confirmation.interface';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 
 @Injectable()
 export class ReviewsService {

@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { Media, Product } from '../../products/entities/product.entity';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { User } from 'src/user/entities/user.entity';
+import { User } from '../../user/entities/user.entity';
 
 @Entity()
 export class ProductReview {

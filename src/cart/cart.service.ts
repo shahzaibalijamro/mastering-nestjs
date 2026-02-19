@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { Product } from 'src/products/entities/product.entity';
-import { User } from 'src/user/entities/user.entity';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { Product } from '../products/entities/product.entity';
+import { User } from '../user/entities/user.entity';
 import { Repository } from 'typeorm';
 import { AddCartItemDto } from './dto/add-cart-item.dto';
 import { CartSummaryDto } from './dto/cart-summary.dto';

@@ -10,11 +10,11 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ContactInformationService } from './contact-information.service';
 import { CreateContactInformationDto } from './dto/create-contact-information.dto';
 import { UpdateContactInformationDto } from './dto/update-contact-information.dto';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @UseGuards(JwtAuthGuard)

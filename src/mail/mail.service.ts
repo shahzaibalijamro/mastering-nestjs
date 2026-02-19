@@ -1,7 +1,7 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import { Injectable } from '@nestjs/common';
 import { sendEmailDTO } from './dto/mail.dto';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
+import { ConfirmationMsg } from '../utils/confirmation.interface';
 
 @Injectable()
 export class MailService {

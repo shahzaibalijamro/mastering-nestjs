@@ -1,5 +1,5 @@
-import { Store } from 'src/store/entities/store.entity';
-import { ContactInformation } from 'src/contact-information/entities/contact-information.entity';
+import { Store } from '../../store/entities/store.entity';
+import { ContactInformation } from '../../contact-information/entities/contact-information.entity';
 import {
   BeforeInsert,
   Column,
@@ -12,10 +12,10 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
-import { ProductReview } from 'src/reviews/entities/reviews.entity';
-import { Tag } from 'src/tags/entities/tags.entity';
-import { Order } from 'src/orders/entities/order.entity';
-import { Cart } from 'src/cart/entities/cart.entity';
+import { ProductReview } from '../../reviews/entities/reviews.entity';
+import { Tag } from '../../tags/entities/tags.entity';
+import { Order } from '../../orders/entities/order.entity';
+import { Cart } from '../../cart/entities/cart.entity';
 
 export enum UserRole {
   USER = 'USER',

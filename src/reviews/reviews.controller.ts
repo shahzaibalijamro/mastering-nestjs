@@ -2,10 +2,10 @@ import { Body, Controller, Delete, Param, ParseUUIDPipe, Post, Req, UploadedFile
 import { ReviewsService } from './reviews.service';
 import { AddReviewDTO } from './dto/reviews.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { FileValidationInterceptor } from 'src/interceptors/file-validation.interceptor';
+import { FileValidationInterceptor } from '../interceptors/file-validation.interceptor';
 import { ApiBody, ApiConsumes, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 
 @Controller('reviews')
 @ApiTags('Reviews')

@@ -9,12 +9,12 @@ import Stripe from 'stripe';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User, UserRole } from 'src/user/entities/user.entity';
+import { User, UserRole } from '../user/entities/user.entity';
 import { Payment, PaymentPurpose } from './entities/payment.entity';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { UserService } from 'src/user/user.service';
-import { StoreService } from 'src/store/store.service';
-import { Order } from 'src/orders/entities/order.entity';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { UserService } from '../user/user.service';
+import { StoreService } from '../store/store.service';
+import { Order } from '../orders/entities/order.entity';
 
 interface ChargeOrderParams {
   amountInCents: number;

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Product } from 'src/products/entities/product.entity';
+import { Product } from '../products/entities/product.entity';
 import { Favorite } from './entities/favorite.entity';
 import { FavoritesController } from './favorites.controller';
 import { FavoritesService } from './favorites.service';

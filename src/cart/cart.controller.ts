@@ -18,8 +18,8 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { AddCartItemDto } from './dto/add-cart-item.dto';
 import { CartSummaryDto } from './dto/cart-summary.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';

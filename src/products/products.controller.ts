@@ -23,8 +23,8 @@ import {
 } from './dto/products.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { FileValidationInterceptor } from '../interceptors/file-validation.interceptor';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
-import { Public } from 'src/utils/public.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { Public } from '../utils/public.decorator';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -34,10 +34,10 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { Roles } from 'src/utils/roles.decorator';
-import { UserRole } from 'src/user/entities/user.entity';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { Roles } from '../utils/roles.decorator';
+import { UserRole } from '../user/entities/user.entity';
+import { RolesGuard } from '../auth/guards/roles.guard';
 
 @Controller('products')
 @UseGuards(JwtAuthGuard, RolesGuard)

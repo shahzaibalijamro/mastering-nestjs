@@ -7,12 +7,12 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { Store } from './entities/store.entity';
 import { Repository } from 'typeorm';
-import { Product } from 'src/products/entities/product.entity';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
+import { Product } from '../products/entities/product.entity';
+import { ConfirmationMsg } from '../utils/confirmation.interface';
 import { CreateStoreDTO, UpdateStoreDTO } from './dto/store.dto';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { ProductsService } from 'src/products/products.service';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { ProductsService } from '../products/products.service';
 
 @Injectable()
 export class StoreService {

@@ -11,10 +11,10 @@ import {
 } from '@nestjs/common';
 import type {
   UserWithoutPassword,
-} from 'src/auth/interfaces/user.interface';
+} from '../auth/interfaces/user.interface';
 import { User } from './entities/user.entity';
 import { UserService } from './user.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateUserDTO } from './dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 

@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from 'src/user/entities/user.entity';
-import { Order } from 'src/orders/entities/order.entity';
+import { User } from '../../user/entities/user.entity';
+import { Order } from '../../orders/entities/order.entity';
 
 export enum PaymentPurpose {
   SELLER_REGISTRATION = 'SELLER_REGISTRATION',

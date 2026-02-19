@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { Product } from 'src/products/entities/product.entity';
-import { User } from 'src/user/entities/user.entity';
-import { ConfirmationMsg } from 'src/utils/confirmation.interface';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { Product } from '../products/entities/product.entity';
+import { User } from '../user/entities/user.entity';
+import { ConfirmationMsg } from '../utils/confirmation.interface';
 import { In, Repository } from 'typeorm';
 import { ProductFavoriteStatusDto } from './dto/product-favorite-status.dto';
 import { Favorite } from './entities/favorite.entity';

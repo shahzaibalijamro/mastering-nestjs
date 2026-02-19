@@ -7,8 +7,8 @@ import { Repository } from 'typeorm';
 import { ContactInformation } from './entities/contact-information.entity';
 import { CreateContactInformationDto } from './dto/create-contact-information.dto';
 import { UpdateContactInformationDto } from './dto/update-contact-information.dto';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
-import { User } from 'src/user/entities/user.entity';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class ContactInformationService {

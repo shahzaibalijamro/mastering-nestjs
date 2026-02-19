@@ -11,9 +11,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { OrdersService } from './orders.service';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { UserWithoutPassword } from 'src/auth/interfaces/user.interface';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -23,9 +23,9 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { Order } from './entities/order.entity';
-import { RolesGuard } from 'src/auth/guards/roles.guard';
-import { Roles } from 'src/utils/roles.decorator';
-import { UserRole } from 'src/user/entities/user.entity';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../utils/roles.decorator';
+import { UserRole } from '../user/entities/user.entity';
 import { GetStoreOrdersQueryDto } from './dto/get-store-orders-query.dto';
 import { UpdateOrderItemStatusDto } from './dto/update-order-item-status.dto';
 import { OrderItem, OrderItemStatus } from './entities/order-item.entity';

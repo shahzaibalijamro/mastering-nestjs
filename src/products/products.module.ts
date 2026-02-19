@@ -3,12 +3,12 @@ import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Product } from './entities/product.entity';
-import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
-import { TagsModule } from 'src/tags/tags.module';
-import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
-import { ReviewsModule } from 'src/reviews/reviews.module';
-import { Store } from 'src/store/entities/store.entity';
-import { Favorite } from 'src/favorites/entities/favorite.entity';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { TagsModule } from '../tags/tags.module';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { ReviewsModule } from '../reviews/reviews.module';
+import { Store } from '../store/entities/store.entity';
+import { Favorite } from '../favorites/entities/favorite.entity';
 
 @Module({
   imports: [
