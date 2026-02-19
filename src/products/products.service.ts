@@ -13,10 +13,10 @@ import {
   UpdateProductDTO,
   UpdateProductMediaDTO,
 } from './dto/products.dto';
-import { ConfirmationMsg } from '../utils/confirmation.interface';
+import { ConfirmationMsg } from '../temp_utils/confirmation.interface';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';
-import { formatCloudinaryMediaFiles } from '../utils/utils';
+import { formatCloudinaryMediaFiles } from '../temp_utils/utils';
 import { TagsService } from '../tags/tags.service';
 import {
   UserWithoutPassword,

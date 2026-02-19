@@ -18,7 +18,7 @@ import {
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { Product } from '../products/entities/product.entity';
-import { ConfirmationMsg } from '../utils/confirmation.interface';
+import { ConfirmationMsg } from '../temp_utils/confirmation.interface';
 import { ProductFavoriteStatusDto } from './dto/product-favorite-status.dto';
 import { FavoritesService } from './favorites.service';
 

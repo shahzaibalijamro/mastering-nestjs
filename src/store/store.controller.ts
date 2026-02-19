@@ -2,7 +2,7 @@ import { Body, Controller, Get, Patch, Req, UploadedFile, UseGuards, UseIntercep
 import { StoreService } from './store.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
-import { Roles } from '../utils/roles.decorator';
+import { Roles } from '../temp_utils/roles.decorator';
 import { UserRole } from '../user/entities/user.entity';
 import { Store } from './entities/store.entity';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';

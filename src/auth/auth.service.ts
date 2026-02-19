@@ -10,7 +10,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { MoreThan, Repository } from 'typeorm';
 import { signUpMethod, User, UserRole } from '../user/entities/user.entity';
-import { ConfirmationMsg, Token } from '../utils/confirmation.interface';
+import { ConfirmationMsg, Token } from '../temp_utils/confirmation.interface';
 import {
   CreateGoogleUserDTO,
   CreateUserDTO,

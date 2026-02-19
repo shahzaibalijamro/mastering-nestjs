@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Store } from './entities/store.entity';
 import { Repository } from 'typeorm';
 import { Product } from '../products/entities/product.entity';
-import { ConfirmationMsg } from '../utils/confirmation.interface';
+import { ConfirmationMsg } from '../temp_utils/confirmation.interface';
 import { CreateStoreDTO, UpdateStoreDTO } from './dto/store.dto';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';

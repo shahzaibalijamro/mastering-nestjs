@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { Product } from '../products/entities/product.entity';
 import { User } from '../user/entities/user.entity';
-import { ConfirmationMsg } from '../utils/confirmation.interface';
+import { ConfirmationMsg } from '../temp_utils/confirmation.interface';
 import { In, Repository } from 'typeorm';
 import { ProductFavoriteStatusDto } from './dto/product-favorite-status.dto';
 import { Favorite } from './entities/favorite.entity';
