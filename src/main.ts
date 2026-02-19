@@ -10,7 +10,7 @@ async function bootstrap() {
     transform: true
   }));
   app.enableCors({
-    origin: 'http://localhost:3001'
+    origin: process.env.FRONTEND_URL
   })
 
   const config = new DocumentBuilder()
