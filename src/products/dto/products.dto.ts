@@ -3,6 +3,7 @@ import {
   ArrayMinSize,
   IsArray,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -10,11 +11,13 @@ import {
   IsString,
   IsUrl,
   IsUUID,
+  Max,
+  Min,
   MinLength,
   ValidateNested,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { MediaType } from '../entities/product.entity';
+import { MediaType, Product } from '../entities/product.entity';
 
 export class Media {
   @ApiProperty({
@@ -220,3 +223,133 @@ export class deleteMultipleProductsDTO {
   ids: Array<string>
 }
 
+export enum FilterBy {
+  NEWEST = 'NEWEST',
+  OLDEST = 'OLDEST',
+  PRICE_ASC = 'PRICE_ASC',
+  PRICE_DESC = 'PRICE_DESC',
+  PRICE_LTH = 'PRICE_LTH',
+  PRICE_HTL = 'PRICE_HTL',
+  MOST_REVIEWED = 'MOST_REVIEWED',
+  MOST_FAVORITED = 'MOST_FAVORITED',
+}
+
+export class getProductsFilterDTO {
+  @ApiPropertyOptional({
+    description: 'Filter products by tag name.',
+    example: 'shoes',
+  })
+  @IsOptional()
+  @IsString()
+  tag?: string;
+
+  @ApiPropertyOptional({
+    description: 'Sort products by one of the supported options.',
+    enum: FilterBy,
+    example: FilterBy.NEWEST,
+  })
+  @IsOptional()
+  @IsEnum(FilterBy)
+  filterBy?: FilterBy;
+
+  @ApiPropertyOptional({
+    description: 'Search text applied to product name and description.',
+    example: 'canvas',
+  })
+  @IsOptional()
+  @IsString()
+  searchQuery?: string;
+
+  @ApiPropertyOptional({
+    description: 'Minimum price filter (inclusive).',
+    example: 0,
+    minimum: 0,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  minPrice?: number;
+
+  @ApiPropertyOptional({
+    description: 'Maximum price filter (inclusive).',
+    example: 250,
+    minimum: 0,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  maxPrice?: number;
+
+  @ApiPropertyOptional({
+    description: 'Page number (1-based).',
+    example: 1,
+    minimum: 1,
+    default: 1,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  page?: number = 1;
+
+  @ApiPropertyOptional({
+    description: 'Page size.',
+    example: 20,
+    minimum: 1,
+    maximum: 100,
+    default: 20,
+  })
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  limit?: number = 20;
+}
+
+export class PaginatedProductsDTO {
+  @ApiProperty({
+    description: 'Products for the current page.',
+    type: Product,
+    isArray: true,
+  })
+  items: Product[];
+
+  @ApiProperty({
+    description: 'Total number of matching products.',
+    example: 124,
+  })
+  total: number;
+
+  @ApiProperty({
+    description: 'Current page number (1-based).',
+    example: 1,
+  })
+  page: number;
+
+  @ApiProperty({
+    description: 'Number of items per page.',
+    example: 20,
+  })
+  limit: number;
+
+  @ApiProperty({
+    description: 'Total available pages.',
+    example: 7,
+  })
+  totalPages: number;
+
+  @ApiProperty({
+    description: 'Whether there is a next page.',
+    example: true,
+  })
+  hasNextPage: boolean;
+
+  @ApiProperty({
+    description: 'Whether there is a previous page.',
+    example: false,
+  })
+  hasPreviousPage: boolean;
+}

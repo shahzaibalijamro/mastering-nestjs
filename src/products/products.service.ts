@@ -5,11 +5,14 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { Media, MediaType, Product } from './entities/product.entity';
 import {
   CreateProductDTO,
   deleteMultipleProductsDTO,
+  FilterBy,
+  getProductsFilterDTO,
+  PaginatedProductsDTO,
   UpdateProductDTO,
   UpdateProductMediaDTO,
 } from './dto/products.dto';
@@ -69,11 +72,126 @@ export class ProductsService {
     return store;
   }
 
-  async getProducts(): Promise<Product[]> {
-    const products = await this.productRepository.find({
-      loadEagerRelations: false,
-    });
-    return this.attachFavoritesCount(products);
+  async getProducts(
+    queryParams: getProductsFilterDTO,
+  ): Promise<PaginatedProductsDTO> {
+    const {
+      filterBy = FilterBy.NEWEST,
+      searchQuery,
+      tag,
+      minPrice,
+      maxPrice,
+      page = 1,
+      limit = 20,
+    } = queryParams;
+
+    if (
+      minPrice !== undefined &&
+      maxPrice !== undefined &&
+      minPrice > maxPrice
+    ) {
+      throw new BadRequestException('minPrice cannot be greater than maxPrice');
+    }
+
+    const queryBuilder = this.productRepository.createQueryBuilder('product');
+
+    if (tag) {
+      queryBuilder.andWhere(
+        `EXISTS (
+          SELECT 1
+          FROM "product_tags" "productTag"
+          INNER JOIN "tag" "tagFilter" ON "tagFilter"."id" = "productTag"."tagId"
+          WHERE "productTag"."productId" = "product"."id"
+            AND LOWER("tagFilter"."name") = LOWER(:tag)
+        )`,
+        { tag: tag.trim() },
+      );
+    }
+
+    if (searchQuery?.trim()) {
+      const normalizedSearch = `%${searchQuery.trim()}%`;
+      queryBuilder.andWhere(
+        new Brackets((qb) => {
+          qb.where('LOWER(product.name) LIKE LOWER(:searchQuery)', {
+            searchQuery: normalizedSearch,
+          }).orWhere('LOWER(product.description) LIKE LOWER(:searchQuery)', {
+            searchQuery: normalizedSearch,
+          });
+        }),
+      );
+    }
+
+    if (minPrice !== undefined) {
+      queryBuilder.andWhere('product.price >= :minPrice', { minPrice });
+    }
+
+    if (maxPrice !== undefined) {
+      queryBuilder.andWhere('product.price <= :maxPrice', { maxPrice });
+    }
+
+    const total = await queryBuilder.clone().getCount();
+
+    switch (filterBy) {
+      case FilterBy.OLDEST:
+        queryBuilder.orderBy('product.createdAt', 'ASC');
+        break;
+      case FilterBy.PRICE_ASC:
+      case FilterBy.PRICE_LTH:
+        queryBuilder.orderBy('product.price', 'ASC');
+        break;
+      case FilterBy.PRICE_DESC:
+      case FilterBy.PRICE_HTL:
+        queryBuilder.orderBy('product.price', 'DESC');
+        break;
+      case FilterBy.MOST_REVIEWED:
+        queryBuilder
+          .addSelect(
+            (qb) =>
+              qb
+                .select('COUNT(review.id)')
+                .from(ProductReview, 'review')
+                .where('review.productId = product.id'),
+            'reviews_count_sort',
+          )
+          .orderBy('reviews_count_sort', 'DESC')
+          .addOrderBy('product.createdAt', 'DESC');
+        break;
+      case FilterBy.MOST_FAVORITED:
+        queryBuilder
+          .addSelect(
+            (qb) =>
+              qb
+                .select('COUNT(favorite.id)')
+                .from(Favorite, 'favorite')
+                .where('favorite.productId = product.id'),
+            'favorites_count_sort',
+          )
+          .orderBy('favorites_count_sort', 'DESC')
+          .addOrderBy('product.createdAt', 'DESC');
+        break;
+      case FilterBy.NEWEST:
+      default:
+        queryBuilder.orderBy('product.createdAt', 'DESC');
+        break;
+    }
+
+    const products = await queryBuilder
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getMany();
+
+    const items = await this.attachFavoritesCount(products);
+    const totalPages = total === 0 ? 0 : Math.ceil(total / limit);
+
+    return {
+      items,
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPreviousPage: page > 1,
+    };
   }
 
   async getProductsByTag(tag: Tag): Promise<Product[]> {

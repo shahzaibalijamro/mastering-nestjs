@@ -8,6 +8,7 @@ import {
   ParseUUIDPipe,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFiles,
   UseGuards,
@@ -18,6 +19,8 @@ import { Product } from './entities/product.entity';
 import {
   CreateProductDTO,
   deleteMultipleProductsDTO,
+  getProductsFilterDTO,
+  PaginatedProductsDTO,
   UpdateProductDTORaw,
   UpdateProductMediaDTO,
 } from './dto/products.dto';
@@ -53,11 +56,12 @@ export class ProductsController {
   @ApiResponse({
     status: 200,
     description: 'List of products.',
-    type: Product,
-    isArray: true,
+    type: PaginatedProductsDTO,
   })
-  getProducts(): Promise<Product[]> {
-    return this.productsService.getProducts();
+  getProducts(
+    @Query() queryParams: getProductsFilterDTO,
+  ): Promise<PaginatedProductsDTO> {
+    return this.productsService.getProducts(queryParams);
   }
 
   // get each user's products
