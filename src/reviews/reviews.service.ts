@@ -13,6 +13,9 @@ import { formatCloudinaryMediaFiles } from '../utils/utils';
 import { Product } from '../products/entities/product.entity';
 import { ConfirmationMsg } from '../utils/confirmation.interface';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { OrdersService } from 'src/orders/orders.service';
+import { Order, OrderStatus } from 'src/orders/entities/order.entity';
+import { OrderItemStatus } from 'src/orders/entities/order-item.entity';
 
 @Injectable()
 export class ReviewsService {
@@ -20,6 +23,8 @@ export class ReviewsService {
     @InjectRepository(ProductReview)
     private readonly reviewRepository: Repository<ProductReview>,
     private readonly cloudinaryService: CloudinaryService,
+    @InjectRepository(Order)
+    private readonly orderRepository: Repository<Order>,
     @InjectRepository(Product)
     private readonly productRepository: Repository<Product>,
   ) {}
@@ -29,11 +34,51 @@ export class ReviewsService {
       where: {
         id,
       },
+      relations: {
+        store: true,
+      }
     });
     if (!product) {
       throw new NotFoundException('Product not found');
     }
     return product;
+  }
+
+  async checkIfUserBoughtProduct(
+    user: UserWithoutPassword,
+    productId: string,
+  ): Promise<Boolean> {
+    const product = await this.orderRepository.findOne({
+      where: {
+        userId: user.id,
+        items: {
+          productId,
+          status: OrderItemStatus.ARRIVED
+        }
+      },
+      relations: {
+        items: true,
+      },
+      select: {
+        contactDetails: false,
+        createdAt: false,
+        currency: false,
+        deliveryFee: false,
+        id: false,
+        items: true,
+        status: false,
+        stripePaymentIntentId: false,
+        totalAmount: false,
+        updatedAt: false,
+        user: false,
+        userId: false
+      }
+    });
+    console.log(product, "PRODUCT");
+    if (product) {
+      return true;
+    }
+    return false;
   }
 
   async createReview(
@@ -48,6 +93,10 @@ export class ReviewsService {
       throw new ForbiddenException(
         'Sellers cannot leave a review on their own products!',
       );
+    }
+    const checkIfUserBoughtProduct = await this.checkIfUserBoughtProduct(user, productId);
+    if (!checkIfUserBoughtProduct) {
+      throw new ForbiddenException("User has not bought the product!")
     }
     const review = this.reviewRepository.create({
       text,

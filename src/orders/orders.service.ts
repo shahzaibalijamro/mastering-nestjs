@@ -104,8 +104,7 @@ export class OrdersService {
       orderItems.push(orderItem);
     }
 
-    const deliveryFeeInCents =
-      storeIds.size * this.deliveryFeePerStoreInCents;
+    const deliveryFeeInCents = storeIds.size * this.deliveryFeePerStoreInCents;
     totalAmountInCents += deliveryFeeInCents;
 
     if (totalAmountInCents <= 0) {
@@ -168,6 +167,28 @@ export class OrdersService {
     });
   }
 
+  async checkIfUserBoughtProduct(
+    user: UserWithoutPassword,
+    productId: string,
+  ): Promise<Boolean> {
+    const product = await this.orderRepository.find({
+      where: {
+        userId: user.id,
+        items: {
+          productId,
+        },
+      },
+      relations: {
+        items: true,
+      },
+    });
+    console.log(product);
+    if (product) {
+      return true;
+    }
+    return false;
+  }
+
   async getOrdersForSellerStore(
     user: UserWithoutPassword,
     itemStatus?: OrderItemStatus,
@@ -221,9 +242,7 @@ export class OrdersService {
       .getOne();
 
     if (!item) {
-      throw new NotFoundException(
-        'Order item not found for this seller store',
-      );
+      throw new NotFoundException('Order item not found for this seller store');
     }
 
     item.status = body.status;
