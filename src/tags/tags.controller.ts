@@ -9,8 +9,10 @@ import { Roles } from '../utils/roles.decorator';
 import {  UserRole } from '../user/entities/user.entity';
 import { Public } from '../utils/public.decorator';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
+@SkipThrottle({long: true, short: false})
 @Controller('tags')
 @ApiTags('Tags')
 export class TagsController {

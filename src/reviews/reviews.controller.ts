@@ -26,7 +26,9 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle({long: true, short: false})
 @Controller('reviews')
 @ApiTags('Reviews')
 @UseGuards(JwtAuthGuard)

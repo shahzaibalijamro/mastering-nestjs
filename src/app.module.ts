@@ -1,6 +1,6 @@
-import { Module } from '@nestjs/common';
+import { InternalServerErrorException, Module } from '@nestjs/common';
 import { ProductsModule } from './products/products.module';
-import { APP_INTERCEPTOR } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ResponseTransformInterceptor } from './interceptors/response-transform.interceptor';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -17,6 +17,7 @@ import { ContactInformationModule } from './contact-information/contact-informat
 import { OrdersModule } from './orders/orders.module';
 import { CartModule } from './cart/cart.module';
 import { FavoritesModule } from './favorites/favorites.module';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -24,7 +25,6 @@ import { FavoritesModule } from './favorites/favorites.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ProductsModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -44,10 +44,49 @@ import { FavoritesModule } from './favorites/favorites.module';
       useFactory: (config: ConfigService) => ({
         secret: config.get<string>('JWT_SECRET'),
         signOptions: {
-          expiresIn: '1h'
-        }
-      })
+          expiresIn: '1h',
+        },
+      }),
     }),
+    ThrottlerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => {
+        const normalLimit = Number(config.get<string>('SHORT_LIMIT'));
+        const normalLimitDuration = Number(
+          config.get<string>('SHORT_LIMIT_DURATION'),
+        );
+        const authLimit = Number(config.get<string>('LONG_LIMIT'));
+        const authLimitDuration = Number(
+          config.get<string>('LONG_LIMIT_DURATION'),
+        );
+        if (
+          !normalLimit ||
+          !normalLimitDuration ||
+          !authLimit ||
+          !authLimitDuration
+        ) {
+          throw new InternalServerErrorException(
+            'Missing throttle configuration',
+          );
+        }
+        return {
+          throttlers: [
+            {
+              name: 'short',
+              limit: normalLimit,
+              ttl: normalLimitDuration,
+            },
+            {
+              name: 'long',
+              limit: authLimit,
+              ttl: authLimitDuration,
+            },
+          ],
+        };
+      },
+    }),
+    ProductsModule,
     CloudinaryModule,
     ReviewsModule,
     TagsModule,
@@ -68,6 +107,10 @@ import { FavoritesModule } from './favorites/favorites.module';
       provide: APP_INTERCEPTOR,
       useClass: ResponseTransformInterceptor,
     },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard
+    }
   ],
 })
 export class AppModule {}

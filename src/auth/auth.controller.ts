@@ -21,16 +21,20 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { UpdatePasswordDTO } from '../user/dto/user.dto';
 import { ResetPasswordEmailDTO, ResetPasswordWithTokenDTO } from './dto/reset-password.dto';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @Controller('auth')
 @ApiTags('Auth')
+@SkipThrottle()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @SkipThrottle({short: true, long: false})
   @UseGuards(GoogleAuthGuard)
   @Get('google')
   signInWithGoogle() {}
 
+  @SkipThrottle({short: true, long: false})
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
   async googleCallback(@Req() req, @Res() res) {
@@ -40,6 +44,7 @@ export class AuthController {
     return res.redirect(redirectUrl);
   }
 
+  @SkipThrottle({short: true, long: false})
   @Post('signup')
   @ApiOperation({ summary: 'Create a new user account' })
   @ApiBody({ type: CreateUserDTO })
@@ -58,6 +63,7 @@ export class AuthController {
     return this.authService.createUser(body);
   }
 
+  @SkipThrottle({short: true, long: false})
   @Post('signin')
   @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Sign in and get a JWT' })
@@ -80,6 +86,7 @@ export class AuthController {
     return this.authService.signIn(user);
   }
 
+  @SkipThrottle({short: false, long: true})
   @Get('verify')
   @UseGuards(JwtAuthGuard)
   verifyUser(
@@ -88,6 +95,7 @@ export class AuthController {
     return this.authService.getNewToken(req.user as UserWithoutPassword);
   }
 
+  @SkipThrottle({short: true, long: false})
   @Patch('update-password')
   @UseGuards(JwtAuthGuard)
   updatePassword(@Req() req, @Body() body: UpdatePasswordDTO): Promise<void> {
@@ -97,11 +105,13 @@ export class AuthController {
     );
   }
 
+  @SkipThrottle({short: true, long: false})
   @Post('reset-password-email')
   resetPassword(@Body() body: ResetPasswordEmailDTO): Promise<ConfirmationMsg> {
     return this.authService.sendResetPasswordLink(body);
   }
 
+  @SkipThrottle({short: true, long: false})
   @Patch('reset-password')
   @ApiOperation({
     summary:

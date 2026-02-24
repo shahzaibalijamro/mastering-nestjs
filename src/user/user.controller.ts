@@ -17,7 +17,9 @@ import { UserService } from './user.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateUserDTO } from './dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle({long: true, short: false})
 @UseGuards(JwtAuthGuard)
 @Controller('user')
 export class UserController {

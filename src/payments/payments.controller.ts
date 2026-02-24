@@ -4,7 +4,9 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RegisterSellerDto } from './dto/register-seller.dto';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { ApiBody, ApiOperation } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle({long: true, short: false})
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}

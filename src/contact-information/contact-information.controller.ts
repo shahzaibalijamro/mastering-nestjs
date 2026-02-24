@@ -16,10 +16,12 @@ import { CreateContactInformationDto } from './dto/create-contact-information.dt
 import { UpdateContactInformationDto } from './dto/update-contact-information.dto';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @ApiTags('Contact Information')
+@SkipThrottle({long: true, short: false})
 @Controller('contact-information')
 export class ContactInformationController {
   constructor(

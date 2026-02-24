@@ -5,6 +5,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from '../src/app.module';
 import express from 'express';
+import helmet from 'helmet';
+import hpp from 'hpp'
 
 const expressApp = express();
 let isInitialized = false;
@@ -17,11 +19,20 @@ async function createNestServer() {
     new ExpressAdapter(expressApp),
   );
 
-  // ✅ Ported from your main.ts exactly
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
+  app.use(helmet());
+  app.use(express.json({ limit: '10kb' }));
+  app.use(express.urlencoded({ limit: '10kb' }));
+  app.use(
+    hpp({
+      whitelist: [],
+    }),
+  );
 
   app.enableCors({
     origin: process.env.FRONTEND_URL,
@@ -38,7 +49,7 @@ async function createNestServer() {
     jsonDocumentUrl: 'docs/json',
   });
 
-  await app.init(); // 👈 .init() instead of .listen()
+  await app.init();
   isInitialized = true;
 }
 

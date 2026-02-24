@@ -8,7 +8,9 @@ import { Store } from './entities/store.entity';
 import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { UpdateStoreDTO } from './dto/store.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle({long: true, short: false})
 @Controller('store')
 @UseGuards(JwtAuthGuard,RolesGuard)
 export class StoreController {

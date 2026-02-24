@@ -41,7 +41,9 @@ import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { Roles } from '../utils/roles.decorator';
 import { UserRole } from '../user/entities/user.entity';
 import { RolesGuard } from '../auth/guards/roles.guard';
+import { SkipThrottle } from '@nestjs/throttler';
 
+@SkipThrottle({long: true, short: false})
 @Controller('products')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @ApiTags('Products')

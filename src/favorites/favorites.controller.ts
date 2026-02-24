@@ -21,10 +21,12 @@ import { Product } from '../products/entities/product.entity';
 import { ConfirmationMsg } from '../utils/confirmation.interface';
 import { ProductFavoriteStatusDto } from './dto/product-favorite-status.dto';
 import { FavoritesService } from './favorites.service';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @ApiTags('Favorites')
+@SkipThrottle({long: true, short: false})
 @Controller('favorites')
 export class FavoritesController {
   constructor(private readonly favoritesService: FavoritesService) {}

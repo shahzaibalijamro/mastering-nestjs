@@ -29,10 +29,12 @@ import { UserRole } from '../user/entities/user.entity';
 import { GetStoreOrdersQueryDto } from './dto/get-store-orders-query.dto';
 import { UpdateOrderItemStatusDto } from './dto/update-order-item-status.dto';
 import { OrderItem, OrderItemStatus } from './entities/order-item.entity';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @ApiTags('Orders')
+@SkipThrottle({long: true, short: false})
 @Controller('orders')
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}

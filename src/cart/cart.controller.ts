@@ -24,10 +24,12 @@ import { AddCartItemDto } from './dto/add-cart-item.dto';
 import { CartSummaryDto } from './dto/cart-summary.dto';
 import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 import { CartService } from './cart.service';
+import { SkipThrottle } from '@nestjs/throttler';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
 @ApiTags('Cart')
+@SkipThrottle({long: true, short: false})
 @Controller('cart')
 export class CartController {
   constructor(private readonly cartService: CartService) {}
