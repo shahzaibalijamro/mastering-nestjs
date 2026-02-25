@@ -162,7 +162,7 @@ export class AuthService {
     return {
       httpOnly: true,
       secure: NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: 'none',
       maxAge: 1000 * 60 * 60 * 24,
     }
   }
