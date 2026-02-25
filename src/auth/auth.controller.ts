@@ -130,7 +130,7 @@ export class AuthController {
     @Request() req,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
-    response.clearCookie('jwt');
+    response.clearCookie('jwt', this.authService.cookieConfigurations() as CookieOptions);
     return;
   }
 
