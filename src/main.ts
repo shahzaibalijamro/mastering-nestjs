@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import hpp from 'hpp'
+import cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -16,8 +17,11 @@ async function bootstrap() {
     forbidNonWhitelisted: true,
     transform: true
   }));
+  // Enable cookie parser
+  app.use(cookieParser());
   app.enableCors({
-    origin: process.env.FRONTEND_URL
+    origin: process.env.FRONTEND_URL,
+    credentials: true
   })
   app.useBodyParser('json', {limit: '10kb'});
   app.useBodyParser('urlencoded', {limit: '10kb'});

@@ -7,6 +7,7 @@ import { AppModule } from '../src/app.module';
 import express from 'express';
 import helmet from 'helmet';
 import hpp from 'hpp'
+import cookieParser from 'cookie-parser';
 
 const expressApp = express();
 let isInitialized = false;
@@ -33,9 +34,11 @@ async function createNestServer() {
       whitelist: [],
     }),
   );
-
+  // Enable cookie parser
+  app.use(cookieParser());
   app.enableCors({
     origin: process.env.FRONTEND_URL,
+    credentials: true
   });
 
   const config = new DocumentBuilder()

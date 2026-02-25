@@ -2,8 +2,12 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { TokenPayload, UserWithoutPassword } from '../interfaces/user.interface';
+import {
+  TokenPayload,
+  UserWithoutPassword,
+} from '../interfaces/user.interface';
 import { UserService } from '../../user/user.service';
+import { Request } from 'express';
 
 @Injectable()
 export class JWTStrategy extends PassportStrategy(Strategy) {
@@ -16,7 +20,15 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
       throw new Error('JWT_SECRET environment variable is not defined');
     }
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request: Request) => {
+          const jwt = request?.cookies['jwt'];
+          if (!jwt) {
+            return null;
+          }
+          return jwt;
+        },
+      ]),
       ignoreExpiration: false,
       secretOrKey: secret,
     });
@@ -28,7 +40,7 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
     );
     console.log(user);
     console.log(payload);
-    
+
     if (!user) {
       throw new UnauthorizedException('User no longer exists');
     }

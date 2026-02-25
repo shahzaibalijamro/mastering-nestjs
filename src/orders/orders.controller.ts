@@ -67,7 +67,7 @@ export class OrdersController {
     description: 'Optional fulfillment status filter for seller order items.',
   })
   @ApiResponse({ status: 200, description: 'Store orders returned.', type: [Order] })
-  getStoreOrders(@Req() req, @Query() query: GetStoreOrdersQueryDto) {
+  getStoreOrders(@Req() req, @Query('itemStatus') query: GetStoreOrdersQueryDto) {
     return this.ordersService.getOrdersForSellerStore(
       req.user as UserWithoutPassword,
       query.itemStatus,

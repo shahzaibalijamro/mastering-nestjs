@@ -154,6 +154,19 @@ export class AuthService {
     };
   }
 
+  cookieConfigurations() {
+    const NODE_ENV = this.configService.get<string>('NODE_ENV');
+    if (!NODE_ENV) {
+      throw new InternalServerErrorException();
+    }
+    return {
+      httpOnly: true,
+      secure: NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 1000 * 60 * 60 * 24,
+    }
+  }
+
   async updatePassword(
     body: UpdatePasswordDTO,
     { id }: UserWithoutPassword,

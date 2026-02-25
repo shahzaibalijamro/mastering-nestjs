@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  InternalServerErrorException,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -20,31 +21,40 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { GoogleAuthGuard } from './guards/google-auth.guard';
 import { UpdatePasswordDTO } from '../user/dto/user.dto';
-import { ResetPasswordEmailDTO, ResetPasswordWithTokenDTO } from './dto/reset-password.dto';
+import {
+  ResetPasswordEmailDTO,
+  ResetPasswordWithTokenDTO,
+} from './dto/reset-password.dto';
 import { SkipThrottle } from '@nestjs/throttler';
+import { CookieOptions, Response } from 'express';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('auth')
 @ApiTags('Auth')
 @SkipThrottle()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService,
+  ) {}
 
-  @SkipThrottle({short: true, long: false})
+  @SkipThrottle({ short: true, long: false })
   @UseGuards(GoogleAuthGuard)
   @Get('google')
   signInWithGoogle() {}
 
-  @SkipThrottle({short: true, long: false})
+  @SkipThrottle({ short: true, long: false })
   @Get('google/callback')
   @UseGuards(GoogleAuthGuard)
-  async googleCallback(@Req() req, @Res() res) {
+  async googleCallback(@Req() req, @Res() res: Response) {
     const user = req.user as UserWithoutPassword;
     const { token } = await this.authService.signIn(user);
-    const redirectUrl = `${process.env.FRONTEND_URL}/auth/login?token=${token}`;
+    res.cookie('jwt', token, this.authService.cookieConfigurations as CookieOptions)
+    const redirectUrl = `${process.env.FRONTEND_URL}/auth/login?status=ok`;
     return res.redirect(redirectUrl);
   }
 
-  @SkipThrottle({short: true, long: false})
+  @SkipThrottle({ short: true, long: false })
   @Post('signup')
   @ApiOperation({ summary: 'Create a new user account' })
   @ApiBody({ type: CreateUserDTO })
@@ -63,7 +73,7 @@ export class AuthController {
     return this.authService.createUser(body);
   }
 
-  @SkipThrottle({short: true, long: false})
+  @SkipThrottle({ short: true, long: false })
   @Post('signin')
   @UseGuards(LocalAuthGuard)
   @ApiOperation({ summary: 'Sign in and get a JWT' })
@@ -81,21 +91,50 @@ export class AuthController {
       },
     },
   })
-  signIn(@Request() req): Promise<Token> {
+  async signIn(
+    @Request() req,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<{ message: string }> {
     const user: UserWithoutPassword = req.user;
-    return this.authService.signIn(user);
+    const { token } = await this.authService.signIn(user);
+    response.cookie(
+      'jwt',
+      token,
+      this.authService.cookieConfigurations as CookieOptions,
+    );
+    return { message: 'Logged in successfully' };
   }
 
-  @SkipThrottle({short: false, long: true})
+  @SkipThrottle({ short: false, long: true })
   @Get('verify')
   @UseGuards(JwtAuthGuard)
-  verifyUser(
+  async verifyUser(
     @Request() req,
-  ): Promise<{ token: string; user: UserWithoutPassword }> {
-    return this.authService.getNewToken(req.user as UserWithoutPassword);
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<UserWithoutPassword> {
+    const { token, user } = await this.authService.getNewToken(
+      req.user as UserWithoutPassword,
+    );
+    response.cookie(
+      'jwt',
+      token,
+      this.authService.cookieConfigurations as CookieOptions,
+    );
+    return user;
   }
 
-  @SkipThrottle({short: true, long: false})
+  @SkipThrottle({ short: true, long: false })
+  @Get('signout')
+  @UseGuards(JwtAuthGuard)
+  async signOut(
+    @Request() req,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<void> {
+    response.clearCookie('jwt');
+    return;
+  }
+
+  @SkipThrottle({ short: true, long: false })
   @Patch('update-password')
   @UseGuards(JwtAuthGuard)
   updatePassword(@Req() req, @Body() body: UpdatePasswordDTO): Promise<void> {
@@ -105,13 +144,13 @@ export class AuthController {
     );
   }
 
-  @SkipThrottle({short: true, long: false})
+  @SkipThrottle({ short: true, long: false })
   @Post('reset-password-email')
   resetPassword(@Body() body: ResetPasswordEmailDTO): Promise<ConfirmationMsg> {
     return this.authService.sendResetPasswordLink(body);
   }
 
-  @SkipThrottle({short: true, long: false})
+  @SkipThrottle({ short: true, long: false })
   @Patch('reset-password')
   @ApiOperation({
     summary:
