@@ -49,7 +49,7 @@ export class AuthController {
   async googleCallback(@Req() req, @Res() res: Response) {
     const user = req.user as UserWithoutPassword;
     const { token } = await this.authService.signIn(user);
-    res.cookie('jwt', token, this.authService.cookieConfigurations as CookieOptions)
+    res.cookie('jwt', token, this.authService.cookieConfigurations() as CookieOptions)
     const redirectUrl = `${process.env.FRONTEND_URL}/auth/login?status=ok`;
     return res.redirect(redirectUrl);
   }
@@ -100,7 +100,7 @@ export class AuthController {
     response.cookie(
       'jwt',
       token,
-      this.authService.cookieConfigurations as CookieOptions,
+      this.authService.cookieConfigurations() as CookieOptions,
     );
     return { message: 'Logged in successfully' };
   }
@@ -118,7 +118,7 @@ export class AuthController {
     response.cookie(
       'jwt',
       token,
-      this.authService.cookieConfigurations as CookieOptions,
+      this.authService.cookieConfigurations() as CookieOptions,
     );
     return user;
   }

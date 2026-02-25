@@ -118,8 +118,6 @@ export class AuthService {
     const { usernameOrEmail, password } = body;
     const user =
       await this.userService.getUserByUsernameOrEmail(usernameOrEmail);
-    console.log(user, 'USER');
-
     if (user.password && bcrypt.compareSync(password, user.password)) {
       const { password, ...result } = user;
       return result;
@@ -159,6 +157,7 @@ export class AuthService {
     if (!NODE_ENV) {
       throw new InternalServerErrorException();
     }
+    console.log('production' === NODE_ENV);
     return {
       httpOnly: true,
       secure: NODE_ENV === 'production',
@@ -212,7 +211,6 @@ export class AuthService {
     const { email, from } = body;
 
     const user = await this.userService.getUserByUsernameOrEmail(email);
-    console.log(user);
 
     const { id, method, googleId, name } = user;
     if (googleId && method === signUpMethod.GOOGLE) {

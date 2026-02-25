@@ -74,7 +74,6 @@ export class ReviewsService {
         userId: false
       }
     });
-    console.log(product, "PRODUCT");
     if (product) {
       return true;
     }
