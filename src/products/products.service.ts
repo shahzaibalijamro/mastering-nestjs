@@ -21,9 +21,7 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { UploadApiResponse } from 'cloudinary';
 import { formatCloudinaryMediaFiles } from '../utils/utils';
 import { TagsService } from '../tags/tags.service';
-import {
-  UserWithoutPassword,
-} from '../auth/interfaces/user.interface';
+import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { User } from '../user/entities/user.entity';
 import { Tag } from '../tags/entities/tags.entity';
 import { ReviewsService } from '../reviews/reviews.service';
@@ -57,7 +55,10 @@ export class ProductsService {
     return store;
   }
 
-  private async confirmProductInStore(user: UserWithoutPassword, product: Product): Promise<Store> {
+  private async confirmProductInStore(
+    user: UserWithoutPassword,
+    product: Product,
+  ): Promise<Store> {
     const store = await this.storeRepository.findOne({
       where: {
         owner: { id: user.id },
@@ -144,17 +145,7 @@ export class ProductsService {
         queryBuilder.orderBy('product.price', 'DESC');
         break;
       case FilterBy.MOST_REVIEWED:
-        queryBuilder
-          .addSelect(
-            (qb) =>
-              qb
-                .select('COUNT(review.id)')
-                .from(ProductReview, 'review')
-                .where('review.productId = product.id'),
-            'reviews_count_sort',
-          )
-          .orderBy('reviews_count_sort', 'DESC')
-          .addOrderBy('product.createdAt', 'DESC');
+        queryBuilder.orderBy('product.reviewsCount', 'DESC');
         break;
       case FilterBy.MOST_FAVORITED:
         queryBuilder
@@ -168,6 +159,12 @@ export class ProductsService {
           )
           .orderBy('favorites_count_sort', 'DESC')
           .addOrderBy('product.createdAt', 'DESC');
+        break;
+      case FilterBy.HIGHEST_RATED:
+        queryBuilder.orderBy(
+          'CASE WHEN product.reviewsCount > 0 THEN product.ratingsSum / product.reviewsCount ELSE 0 END',
+          'DESC',
+        );
         break;
       case FilterBy.NEWEST:
       default:
@@ -198,16 +195,15 @@ export class ProductsService {
     const products = await this.productRepository.find({
       where: {
         tags: {
-          id: tag.id
-        }
+          id: tag.id,
+        },
       },
       loadEagerRelations: false,
-    })
+    });
     return this.attachFavoritesCount(products);
   }
 
   async getProductsByUser(user: UserWithoutPassword): Promise<Product[]> {
-
     const userStore = await this.getStoreByUser(user.id);
 
     const products = await this.productRepository.find({
@@ -216,7 +212,7 @@ export class ProductsService {
       },
       relations: {
         store: false,
-        reviews: true
+        reviews: true,
       },
       loadEagerRelations: false,
     });
@@ -290,15 +286,15 @@ export class ProductsService {
         tags: true,
         updatedAt: true,
         reviewsCount: true,
-        ratingsSum: true
+        ratingsSum: true,
       },
       relations: {
         reviews: {
-          user: true
+          user: true,
         },
         store: true,
-        tags: true
-      }
+        tags: true,
+      },
     });
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -322,7 +318,10 @@ export class ProductsService {
       .getRawMany<{ productId: string; favoritesCount: string }>();
 
     const countsByProductId = new Map(
-      rows.map((row) => [row.productId, Number.parseInt(row.favoritesCount, 10)]),
+      rows.map((row) => [
+        row.productId,
+        Number.parseInt(row.favoritesCount, 10),
+      ]),
     );
 
     products.forEach((product) => {

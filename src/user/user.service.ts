@@ -1,6 +1,7 @@
 import {
   ConflictException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -10,6 +11,7 @@ import { UserWithoutPassword } from '../auth/interfaces/user.interface';
 import { UpdateUserDTO } from './dto/user.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { StoreService } from '../store/store.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
@@ -17,6 +19,7 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
     private readonly cloudinaryService: CloudinaryService,
     private readonly storeService: StoreService,
+    private readonly configService: ConfigService
   ) {}
 
   async getUserByUsernameOrEmail(usernameOrEmail: string): Promise<User> {
@@ -91,16 +94,29 @@ export class UserService {
     return user;
   }
 
+  cookieConfigurations() {
+      const NODE_ENV = this.configService.get<string>('NODE_ENV');
+      if (!NODE_ENV) {
+        throw new InternalServerErrorException();
+      }
+      console.log('production' === NODE_ENV);
+      return {
+        httpOnly: true,
+        secure: NODE_ENV === 'production',
+        sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
+        maxAge: 1000 * 60 * 60 * 24,
+      }
+    }
+
 
   async deleteUser(user: UserWithoutPassword) {
     const {profilePicture} = user;
-    if (user.role === UserRole.SELLER && user.store) {
-      
-    }
     if (profilePicture && profilePicture.cloudinaryPublicId && profilePicture.cloudinaryPublicId !== "luxe_users_default_profilePicture_spanj5") {
       await this.cloudinaryService.deleteFile(profilePicture.cloudinaryPublicId)
     }
-    await this.storeService.deleteStore(user);
+    if (user.role === UserRole.SELLER && user.store) {
+      await this.storeService.deleteStore(user);
+    }
     await this.userRepository.delete(user.id);
     return;
   }

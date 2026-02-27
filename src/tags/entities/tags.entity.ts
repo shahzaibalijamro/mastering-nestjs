@@ -20,10 +20,12 @@ export class Tag {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToMany(type => User, (user) => user.addedTags)
+  @ManyToMany(type => User, (user) => user.addedTags, {
+    onDelete: 'SET NULL'
+  })
   user: User;
 
-  @Column('uuid')
+  @Column('uuid', {nullable: true})
   userId: string;
 
   @ApiProperty({

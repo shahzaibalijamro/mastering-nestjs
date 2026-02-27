@@ -5,6 +5,7 @@ import {
   Get,
   Patch,
   Req,
+  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -18,6 +19,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UpdateUserDTO } from './dto/user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { SkipThrottle } from '@nestjs/throttler';
+import { CookieOptions, Response } from 'express';
 
 @SkipThrottle({long: true, short: false})
 @UseGuards(JwtAuthGuard)
@@ -51,9 +53,12 @@ export class UserController {
   }
 
   @Delete()
-  deleteUser(
-    @Req() req
+  async deleteUser(
+    @Req() req,
+    @Res({passthrough: true}) res: Response
   ):Promise<void> {
-    return this.userService.deleteUser(req.user as UserWithoutPassword);
+    await this.userService.deleteUser(req.user as UserWithoutPassword);
+    res.clearCookie('jwt', this.userService.cookieConfigurations() as CookieOptions)
+    return;
   }
 }

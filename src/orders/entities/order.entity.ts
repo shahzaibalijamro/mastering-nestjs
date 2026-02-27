@@ -110,7 +110,7 @@ export class Order {
     type: () => User,
   })
   @ManyToOne(() => User, (user) => user.orders, {
-    onDelete: 'CASCADE',
+    onDelete: 'SET NULL',
     eager: false,
   })
   user: User;
@@ -119,7 +119,7 @@ export class Order {
     description: 'Id of the user object to whom this order belongs.',
     example: '8c5d7a8f-6fb4-4df5-b6f1-93d2f6333a21',
   })
-  @Column('uuid')
+  @Column('uuid', {nullable: true})
   userId: string;
 
   @ApiProperty({

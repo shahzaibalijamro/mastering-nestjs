@@ -232,6 +232,7 @@ export enum FilterBy {
   PRICE_HTL = 'PRICE_HTL',
   MOST_REVIEWED = 'MOST_REVIEWED',
   MOST_FAVORITED = 'MOST_FAVORITED',
+  HIGHEST_RATED = 'HIGHEST_RATED'
 }
 
 export class getProductsFilterDTO {
