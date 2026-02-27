@@ -36,7 +36,7 @@ export class ReviewsService {
       },
       relations: {
         store: true,
-      }
+      },
     });
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -53,8 +53,8 @@ export class ReviewsService {
         userId: user.id,
         items: {
           productId,
-          status: OrderItemStatus.ARRIVED
-        }
+          status: OrderItemStatus.ARRIVED,
+        },
       },
       relations: {
         items: true,
@@ -71,11 +71,23 @@ export class ReviewsService {
         totalAmount: false,
         updatedAt: false,
         user: false,
-        userId: false
-      }
+        userId: false,
+      },
     });
     if (product) {
-      return true;
+      const review = await this.reviewRepository.findOne({
+        where: {
+          product: {
+            id: productId
+          },
+          user: {
+            id: user.id
+          }
+        }
+      })
+      if (!review) {
+        return true;
+      }
     }
     return false;
   }
@@ -93,9 +105,12 @@ export class ReviewsService {
         'Sellers cannot leave a review on their own products!',
       );
     }
-    const checkIfUserBoughtProduct = await this.checkIfUserBoughtProduct(user, productId);
+    const checkIfUserBoughtProduct = await this.checkIfUserBoughtProduct(
+      user,
+      productId,
+    );
     if (!checkIfUserBoughtProduct) {
-      throw new ForbiddenException("User has not bought the product!")
+      throw new ForbiddenException('Not allowed to add a review!');
     }
     const review = this.reviewRepository.create({
       text,
@@ -108,7 +123,21 @@ export class ReviewsService {
         await this.cloudinaryService.uploadFiles(files);
       review.media = formatCloudinaryMediaFiles(UploadedFiles);
     }
+    console.log(Number(product.ratingsSum) + Number(review.stars));
+    console.log(Number(product.ratingsSum));
+    console.log(Number(review.stars));
+
     await this.reviewRepository.save(review);
+    await this.productRepository.update(product.id, {
+      // reviewsCount: product.reviewsCount + 1,
+      // ratingsSum: Number(product.ratingsSum) + Number(review.stars)
+      reviewsCount() {
+        return 'reviewsCount + 1';
+      },
+      ratingsSum() {
+        return `ratingsSum + ${Number(review.stars)}`;
+      },
+    });
     return {
       id: review.id,
       message: 'Review Added!',
@@ -119,6 +148,10 @@ export class ReviewsService {
     const review = await this.reviewRepository.findOne({
       where: {
         id,
+      },
+      relations: {
+        product: true,
+        user: true,
       },
     });
     if (!review) {
@@ -146,6 +179,10 @@ export class ReviewsService {
       );
     }
     await this.reviewRepository.remove(review);
+    await this.productRepository.update(review.product.id, {
+      reviewsCount: review.product.reviewsCount - 1,
+      ratingsSum: review.product.ratingsSum - review.stars,
+    });
     return {
       id: reviewId,
       message: 'Review deleted!',

@@ -207,10 +207,8 @@ export class ProductsService {
   }
 
   async getProductsByUser(user: UserWithoutPassword): Promise<Product[]> {
-    console.log(user);
 
     const userStore = await this.getStoreByUser(user.id);
-    console.log(userStore);
 
     const products = await this.productRepository.find({
       where: {
@@ -218,6 +216,7 @@ export class ProductsService {
       },
       relations: {
         store: false,
+        reviews: true
       },
       loadEagerRelations: false,
     });
@@ -290,12 +289,15 @@ export class ProductsService {
         store: true,
         tags: true,
         updatedAt: true,
+        reviewsCount: true,
+        ratingsSum: true
       },
       relations: {
         reviews: {
           user: true
         },
         store: true,
+        tags: true
       }
     });
     if (!product) {

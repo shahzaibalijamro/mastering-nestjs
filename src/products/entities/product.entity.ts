@@ -63,6 +63,12 @@ export class Product {
   @Column('json')
   media: Media[];
 
+  @Column({default: 0})
+  reviewsCount: number;
+
+  @Column('decimal', { precision: 10, scale: 1 , default: "0.00" })
+  ratingsSum: number
+
   @ApiProperty({
     description: 'Total users who have favorited this product.',
     example: 27,
@@ -78,13 +84,13 @@ export class Product {
   isFavorited?: boolean;
 
   @OneToMany((type) => ProductReview, (review) => review.product, {
-    eager: true,
+    eager: false,
     cascade: true,
   })
   reviews: ProductReview[];
 
   @ManyToMany((type) => Tag, (tag) => tag.products, {
-    eager: true,
+    eager: false,
     onDelete: 'CASCADE'
   })
   @JoinTable({

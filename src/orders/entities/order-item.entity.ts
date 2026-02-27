@@ -32,7 +32,7 @@ export class OrderItem {
     description: 'Product identifier at the time of ordering.',
     example: '0f0d50d8-6d14-4e2c-97ad-0ed4e2ea2f2c',
   })
-  @Column('uuid')
+  @Column('uuid', {nullable: true})
   productId: string;
 
   @ApiProperty({

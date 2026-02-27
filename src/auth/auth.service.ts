@@ -117,7 +117,7 @@ export class AuthService {
   ): Promise<UserWithoutPassword | null> {
     const { usernameOrEmail, password } = body;
     const user =
-      await this.userService.getUserByUsernameOrEmail(usernameOrEmail);
+      await this.userService.getUserByUsernameOrEmail(usernameOrEmail.toLowerCase());
     if (user.password && bcrypt.compareSync(password, user.password)) {
       const { password, ...result } = user;
       return result;
@@ -209,6 +209,8 @@ export class AuthService {
     body: ResetPasswordEmailDTO,
   ): Promise<ConfirmationMsg> {
     const { email, from } = body;
+    console.log(email, from);
+    
 
     const user = await this.userService.getUserByUsernameOrEmail(email);
 
@@ -234,7 +236,7 @@ export class AuthService {
     const resetLink = this.buildResetPasswordLink(token, user.email, from);
 
     await this.mailService.sendEmail({
-      to: email,
+      to: user.email,
       from:
         this.configService.get<string>('EMAIL_USER') ??
         'jamroshahzaibali69@gmail.com',
@@ -246,7 +248,7 @@ export class AuthService {
       subject: 'Reset your Luxe Ecommerce Store password',
     });
     return {
-      id,
+      id: user.email,
       message: 'Reset password email sent!',
     };
   }
